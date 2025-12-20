@@ -11,11 +11,12 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   size?: ButtonSize;
 };
 
+const primaryStyles =
+  "bg-[radial-gradient(circle_at_30%_30%,rgba(54,213,255,0.35),transparent_40%),linear-gradient(135deg,var(--brand-1),var(--brand-2))] text-white shadow-[var(--shadow-elevated)] hover:shadow-[0_18px_50px_rgba(0,0,0,0.45)]";
+
 const variantStyles: Record<ButtonVariant, string> = {
-  primary:
-    "bg-[radial-gradient(circle_at_30%_30%,rgba(54,213,255,0.35),transparent_40%),linear-gradient(135deg,var(--brand-1),var(--brand-2))] text-white shadow-[var(--shadow-elevated)] hover:shadow-[0_18px_50px_rgba(0,0,0,0.45)]",
-  default:
-    "bg-[radial-gradient(circle_at_30%_30%,rgba(54,213,255,0.35),transparent_40%),linear-gradient(135deg,var(--brand-1),var(--brand-2))] text-white shadow-[var(--shadow-elevated)] hover:shadow-[0_18px_50px_rgba(0,0,0,0.45)]",
+  primary: primaryStyles,
+  default: primaryStyles,
   secondary:
     "bg-[rgba(255,255,255,0.04)] text-text border border-white/10 hover:border-[var(--accent)] hover:text-white",
   ghost:
