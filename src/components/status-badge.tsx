@@ -18,6 +18,9 @@ const toneMap: Record<string, { tone: Tone; label: string }> = {
 };
 
 export function StatusBadge({ status }: { status: string }) {
+  if (!status) {
+    return <Badge tone="subtle">Unknown</Badge>;
+  }
   const key = status.toLowerCase();
   const mapped = toneMap[key];
   const tone = mapped?.tone ?? "subtle";

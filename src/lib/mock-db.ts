@@ -143,6 +143,13 @@ type MockDatabase = {
   jobs: Job[];
 };
 
+const randomId = () =>
+  typeof crypto !== "undefined" && typeof (crypto as { randomUUID?: () => string }).randomUUID === "function"
+    ? (crypto as { randomUUID: () => string }).randomUUID()
+    : Math.random().toString(36).slice(2);
+
+const randomShort = (length = 6) => randomId().replace(/-/g, "").slice(-length);
+
 const seedData: MockDatabase = {
   org: { id: "org_swyftup", name: "SwyftUp Capital", currency: "USD" },
   users: [
@@ -408,7 +415,7 @@ let db: MockDatabase = structuredClone(seedData);
 
 function pushAudit(actorUserId: string, action: string, metadata: Record<string, unknown>) {
   db.audit.unshift({
-    id: `audit_${crypto.randomUUID()}`,
+    id: `audit_${randomShort(8)}`,
     orgId: db.org.id,
     actorUserId,
     action,
@@ -418,8 +425,9 @@ function pushAudit(actorUserId: string, action: string, metadata: Record<string,
 }
 
 function addLedger(walletId: string, type: LedgerType, amount: number, referenceType: string, referenceId: string, memo?: string) {
+  const cents = Math.round(amount * 100);
   db.ledger.unshift({
-    id: `led_${crypto.randomUUID()}`,
+    id: `led_${randomShort(8)}`,
     walletId,
     type,
     amount,
@@ -432,7 +440,8 @@ function addLedger(walletId: string, type: LedgerType, amount: number, reference
 
   const wallet = db.wallets.find((w) => w.id === walletId);
   if (wallet) {
-    wallet.balance = wallet.balance + (type === "CREDIT" ? amount : -amount);
+    const balanceCents = Math.round(wallet.balance * 100) + (type === "CREDIT" ? cents : -cents);
+    wallet.balance = balanceCents / 100;
   }
 }
 
@@ -461,14 +470,14 @@ export const inviteContractorAction = async (formData: FormData) => {
   }
 
   const contractor: Contractor = {
-    id: `ctr_${crypto.randomUUID().slice(0, 6)}`,
+    id: `ctr_${randomShort(6)}`,
     orgId: db.org.id,
     name: parsed.data.name,
     email: parsed.data.email,
     status: "invited",
     payoutMethod: "Not provided",
     documents: { kyc: "pending", tax: "pending" },
-    walletId: `w_${crypto.randomUUID().slice(0, 6)}`,
+    walletId: `w_${randomShort(6)}`,
   };
 
   db.contractors.unshift(contractor);
@@ -506,7 +515,7 @@ export const createInvoiceAction = async (formData: FormData) => {
   }
 
   const invoice: Invoice = {
-    id: `inv_${crypto.randomUUID().slice(0, 6)}`,
+    id: `inv_${randomShort(6)}`,
     orgId: db.org.id,
     contractorId: parsed.data.contractorId,
     amount: parsed.data.amount,
@@ -539,7 +548,7 @@ export const approveInvoiceAction = async (invoiceId: string) => {
 
 export const fundWalletAction = async (amount: number) => {
   "use server";
-  addLedger("w_org", "CREDIT", amount, "funding", `fund_${crypto.randomUUID().slice(0, 6)}`, "Mock funding");
+  addLedger("w_org", "CREDIT", amount, "funding", `fund_${randomShort(6)}`, "Mock funding");
   pushAudit("user_owner", "fund_wallet", { amount });
   revalidatePath("/app/wallet");
   revalidatePath("/app");
@@ -560,19 +569,19 @@ export const createPayoutAction = async (formData: FormData) => {
   if (!parsed.success) throw new Error("Invalid payout");
 
   const payout: Payout = {
-    id: `pay_${crypto.randomUUID().slice(0, 6)}`,
+    id: `pay_${randomShort(6)}`,
     orgId: db.org.id,
     contractorId: parsed.data.contractorId,
     amount: parsed.data.amount,
     currency: "USD",
     status: "pending",
-    providerRef: `sim-${crypto.randomUUID().slice(-4)}`,
+    providerRef: `sim-${randomShort(4)}`,
     createdAt: new Date().toISOString(),
   };
 
   db.payouts.unshift(payout);
   db.jobs.unshift({
-    id: `job_${crypto.randomUUID().slice(0, 6)}`,
+    id: `job_${randomShort(6)}`,
     type: "payout_status_refresh",
     payload: { payoutId: payout.id },
     status: "QUEUED",
@@ -619,10 +628,10 @@ export const issueCardAction = async (contractorId: string) => {
   const contractor = db.contractors.find((c) => c.id === contractorId);
   if (!contractor) throw new Error("Contractor not found");
   const card: Card = {
-    id: `card_${crypto.randomUUID().slice(0, 6)}`,
+    id: `card_${randomShort(6)}`,
     orgId: db.org.id,
     contractorId,
-    last4: crypto.randomUUID().slice(-4),
+    last4: randomShort(4),
     status: "active",
     limits: { daily: 1000, monthly: 7500 },
   };
