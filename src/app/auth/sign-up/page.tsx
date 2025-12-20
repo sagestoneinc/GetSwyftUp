@@ -42,7 +42,7 @@ export default function SignUpPage() {
           <p className="text-sm uppercase tracking-[0.2em] text-muted">Create workspace</p>
           <h1 className="font-display text-3xl font-semibold">Create your SwyftUp workspace</h1>
           <p className="text-sm text-muted">
-            Set up your account in minutes. You can invite contractors after you&apos;re ready.
+            Set up your account in minutes. You can invite contractors after you’re ready.
           </p>
         </CardHeader>
         <CardContent>
@@ -56,7 +56,7 @@ export default function SignUpPage() {
                   checked={accountType === "company"}
                   onChange={() => setAccountType("company")}
                 />
-                I&apos;m a Business
+                I’m a Business
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -66,7 +66,7 @@ export default function SignUpPage() {
                   checked={accountType === "contractor"}
                   onChange={() => setAccountType("contractor")}
                 />
-                I&apos;m a Contractor (invite-only)
+                I’m a Contractor (invite-only)
               </label>
             </div>
             {accountType === "contractor" && (
