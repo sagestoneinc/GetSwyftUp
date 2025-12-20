@@ -1,15 +1,32 @@
 import { Badge } from "@/components/ui/badge";
 
-type Status = "Draft" | "Approved" | "Paid" | "Failed";
+type Tone = "warning" | "success" | "critical" | "accent" | "subtle";
 
-const toneMap: Record<Status, { tone: "warning" | "success" | "critical" | "accent"; label: string }> = {
-  Draft: { tone: "warning", label: "Draft" },
-  Approved: { tone: "accent", label: "Approved" },
-  Paid: { tone: "success", label: "Paid" },
-  Failed: { tone: "critical", label: "Failed" },
+const toneMap: Record<string, { tone: Tone; label: string }> = {
+  draft: { tone: "warning", label: "Draft" },
+  submitted: { tone: "subtle", label: "Submitted" },
+  approved: { tone: "accent", label: "Approved" },
+  scheduled: { tone: "subtle", label: "Scheduled" },
+  paid: { tone: "success", label: "Paid" },
+  failed: { tone: "critical", label: "Failed" },
+  pending: { tone: "warning", label: "Pending" },
+  active: { tone: "success", label: "Active" },
+  frozen: { tone: "warning", label: "Frozen" },
+  closed: { tone: "critical", label: "Closed" },
+  investigating: { tone: "warning", label: "Investigating" },
+  open: { tone: "subtle", label: "Open" },
 };
 
-export function StatusBadge({ status }: { status: Status }) {
-  const tone = toneMap[status];
-  return <Badge tone={tone.tone}>{tone.label}</Badge>;
+const formatLabel = (value: string) =>
+  !value ? "Unknown" : value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+
+export function StatusBadge({ status }: { status: string }) {
+  if (!status) {
+    return <Badge tone="subtle">Unknown</Badge>;
+  }
+  const key = status.toLowerCase();
+  const mapped = toneMap[key];
+  const tone = mapped?.tone ?? "subtle";
+  const label = mapped?.label ?? formatLabel(status);
+  return <Badge tone={tone}>{label}</Badge>;
 }
