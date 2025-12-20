@@ -16,7 +16,7 @@ export default async function DashboardLayout({
   const navItems = getNavForRole(user.role);
 
   return (
-    <RoleProvider role={user.role}>
+    <RoleProvider role={user.role} userId={user.id} name={user.name}>
       <div className="flex min-h-screen bg-bg text-text">
         <Sidebar items={navItems} />
         <div className="flex flex-1 flex-col bg-[color-mix(in_srgb,var(--panel)_88%,transparent)]">

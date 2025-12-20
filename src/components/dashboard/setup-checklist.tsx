@@ -17,20 +17,30 @@ export function SetupChecklistCard({
 }) {
   const [items, setItems] = useState(initialItems);
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const allDone = items.every((item) => item.completed);
   if (allDone) return null;
 
   const handleComplete = async (key: string) => {
     setLoadingKey(key);
+    setError(null);
     try {
       const res = await fetch("/api/checklist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, key }),
       });
+      if (!res.ok) {
+        throw new Error("Unable to save progress");
+      }
       const data = await res.json();
+      if (!data?.items) {
+        throw new Error("Invalid response from server");
+      }
       setItems(data.items);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoadingKey(null);
     }
@@ -48,6 +58,7 @@ export function SetupChecklistCard({
         </Badge>
       </CardHeader>
       <CardContent className="space-y-3">
+        {error && <p className="text-sm text-[var(--brand-2)]">{error}</p>}
         {items.map((item) => (
           <div
             key={item.key}

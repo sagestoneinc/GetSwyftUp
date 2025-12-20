@@ -17,6 +17,14 @@ export default function ReportsPage() {
   );
   const unauthorized = ![Role.OWNER, Role.FINANCE_ADMIN].includes(role);
 
+  const escapeCsvValue = (value: unknown) => {
+    const str = String(value ?? "");
+    if (/[",\n]/.test(str)) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
   if (unauthorized) {
     return <p className="text-sm text-muted">Reports are limited to finance roles.</p>;
   }
@@ -33,7 +41,7 @@ export default function ReportsPage() {
         p.createdAt,
       ]),
     ];
-    const csv = rows.map((r) => r.join(",")).join("\n");
+    const csv = rows.map((r) => r.map(escapeCsvValue).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);

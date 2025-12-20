@@ -4,16 +4,18 @@ import { useMemo, useState } from "react";
 import { Card as UiCard, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getCards, getContractors, getTransactions } from "@/data/dashboard";
-import { useRole } from "@/components/dashboard/role-provider";
+import { getCards, getContractors, getTransactions, getContractorForUser } from "@/data/dashboard";
+import { useIdentity } from "@/components/dashboard/role-provider";
 import { Role } from "@/config/roles";
 
 const cards = getCards();
 const contractorMap = Object.fromEntries(getContractors().map((c) => [c.id, c.name]));
 
 export default function CardsPage() {
-  const role = useRole();
+  const identity = useIdentity();
+  const role = identity.role;
   const [frozenIds, setFrozenIds] = useState<string[]>([]);
+  const contractor = getContractorForUser(identity.userId);
 
   const toggleFreeze = (cardId: string) => {
     setFrozenIds((prev) => (prev.includes(cardId) ? prev.filter((id) => id !== cardId) : [...prev, cardId]));
@@ -30,7 +32,10 @@ export default function CardsPage() {
   );
 
   if (role === Role.CONTRACTOR) {
-    const contractorId = getContractors()[0]?.id;
+    if (!contractor) {
+      return <p className="text-sm text-muted">No contractor profile linked to this user.</p>;
+    }
+    const contractorId = contractor.id;
     const card = cards.find((c) => c.contractorId === contractorId);
     const contractorTxns = txns.filter((t) => (card ? t.cardId === card.id : false));
 

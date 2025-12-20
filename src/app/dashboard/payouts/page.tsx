@@ -6,19 +6,22 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
-import { getPayouts, getContractors } from "@/data/dashboard";
-import { useRole } from "@/components/dashboard/role-provider";
+import { getPayouts, getContractors, getContractorForUser } from "@/data/dashboard";
+import { useIdentity } from "@/components/dashboard/role-provider";
 import { Role } from "@/config/roles";
 
 const payouts = getPayouts();
 const contractorMap = Object.fromEntries(getContractors().map((c) => [c.id, c.name]));
 
 export default function PayoutsPage() {
-  const role = useRole();
+  const identity = useIdentity();
+  const role = identity.role;
+  const contractor = getContractorForUser(identity.userId);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
 
   const filtered = useMemo(() => {
+    const contractorId = contractor?.id;
     return payouts.filter((p) => {
       const matchesSearch =
         !search ||
@@ -26,14 +29,18 @@ export default function PayoutsPage() {
         contractorMap[p.contractorId]?.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = status === "all" || p.status.toLowerCase() === status;
       if (role === Role.CONTRACTOR) {
-        const contractorId = getContractors()[0]?.id;
+        if (!contractorId) return false;
         return matchesSearch && matchesStatus && p.contractorId === contractorId;
       }
       return matchesSearch && matchesStatus;
     });
-  }, [search, status, role]);
+  }, [search, status, role, contractor?.id]);
 
   const headerLabel = role === Role.CONTRACTOR ? "Your payouts" : "Releases";
+
+  if (role === Role.CONTRACTOR && !contractor) {
+    return <p className="text-sm text-muted">No contractor profile linked to this user.</p>;
+  }
 
   return (
     <div className="space-y-6">

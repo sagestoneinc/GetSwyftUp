@@ -107,6 +107,7 @@ export function LifecycleFunnel({
 }: {
   steps: Array<{ label: string; count: number; value: string; href: string }>;
 }) {
+  const barScale = 8;
   return (
     <Card className="bg-panel/80">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -122,7 +123,7 @@ export function LifecycleFunnel({
             <p className="text-xl font-semibold">{step.count}</p>
             <p className="text-xs text-muted">{step.value}</p>
             <div className="mt-2 h-1 rounded-full bg-white/10">
-              <div className="h-1 rounded-full bg-[var(--accent)]" style={{ width: `${Math.min(100, step.count * 8)}%` }} />
+              <div className="h-1 rounded-full bg-[var(--accent)]" style={{ width: `${Math.min(100, step.count * barScale)}%` }} />
             </div>
           </Link>
         ))}

@@ -91,5 +91,7 @@ export function getNavForRole(role: Role): NavLink[] {
 }
 
 export function canAccessPath(role: Role, path: PermissionScope["canAccess"][number]) {
-  return rolePermissions[role]?.canAccess.includes(path);
+  const permissions = rolePermissions[role];
+  if (!permissions) return false;
+  return permissions.canAccess.includes(path);
 }

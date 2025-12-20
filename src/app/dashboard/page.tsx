@@ -9,7 +9,7 @@ import {
   getPayouts,
   getCards,
   getTransactions,
-  getContractors,
+  getContractorForUser,
 } from "@/data/dashboard";
 import {
   ActionRequiredPanel,
@@ -27,7 +27,10 @@ export default async function DashboardOverviewPage() {
   const isContractor = user.role === Role.CONTRACTOR;
 
   if (isContractor) {
-    const contractor = getContractors()[0];
+    const contractor = getContractorForUser(user.id);
+    if (!contractor) {
+      return <p className="text-sm text-muted">No contractor profile is linked to this account.</p>;
+    }
     const payouts = getPayouts().filter((p) => p.contractorId === contractor?.id).slice(0, 3);
     const card = getCards().find((c) => c.contractorId === contractor?.id);
     const txns = getTransactions().filter((t) => (card ? t.cardId === card.id : true)).slice(0, 5);

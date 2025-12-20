@@ -252,7 +252,12 @@ const checklistTemplate = [
   { key: "payout", label: "Send first payout", href: "/dashboard/payouts" },
 ] as const;
 
+type ChecklistKey = (typeof checklistTemplate)[number]["key"];
+
 const checklistStore = new Map<string, Set<string>>();
+const userContractorMap: Record<string, string> = {
+  "contractor-user": "ctr_1",
+};
 
 export function getChecklist(userId: string) {
   const completed = checklistStore.get(userId) ?? new Set<string>();
@@ -262,7 +267,7 @@ export function getChecklist(userId: string) {
   }));
 }
 
-export function completeChecklistItem(userId: string, key: (typeof checklistTemplate)[number]["key"]) {
+export function completeChecklistItem(userId: string, key: ChecklistKey) {
   const set = checklistStore.get(userId) ?? new Set<string>();
   set.add(key);
   checklistStore.set(userId, set);
@@ -361,4 +366,10 @@ export function getApprovalRules() {
 
 export function findContractor(contractorId: string) {
   return contractors.find((c) => c.id === contractorId);
+}
+
+export function getContractorForUser(userId: string) {
+  const mappedId = userContractorMap[userId];
+  if (!mappedId) return undefined;
+  return contractors.find((c) => c.id === mappedId);
 }
