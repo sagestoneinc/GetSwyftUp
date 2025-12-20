@@ -104,12 +104,12 @@ export function ContactForm() {
           <p className="text-xs text-muted">
             Note: This form currently collects details locally and will be connected to messaging shortly.
           </p>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Button type="submit" className="w-full sm:w-auto">
-                  Send Message
-                </Button>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button type="submit" className="w-full sm:w-auto">
+              Send Message
+            </Button>
             <Button asChild variant="secondary" className="w-full sm:w-auto">
-              <Link href="/contact">Book a Demo</Link>
+              <Link href="#contact-form">Book a Demo</Link>
             </Button>
           </div>
         </form>
