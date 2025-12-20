@@ -1,0 +1,61 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/sora";
+
+:root {
+  --font-inter: "InterVariable", "Inter", system-ui, -apple-system, sans-serif;
+  --font-sora: "SoraVariable", "Sora", system-ui, -apple-system, sans-serif;
+  --bg: #060910;
+  --panel: #0d1421;
+  --border: #1c2434;
+  --text: #f6f7fb;
+  --muted: #9aa4ba;
+  --brand-1: #5c64ff;
+  --brand-2: #d23ca1;
+  --accent: #36d5ff;
+  --shadow-soft: 0 22px 90px rgba(0, 0, 0, 0.48);
+  --shadow-elevated: 0 14px 50px rgba(0, 0, 0, 0.38);
+  --radius-card: 18px;
+  --radius-button: 12px;
+  --radius-pill: 999px;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-brand-1: var(--brand-1);
+  --color-brand-2: var(--brand-2);
+  --color-accent: var(--accent);
+  --shadow-soft: var(--shadow-soft);
+  --shadow-elevated: var(--shadow-elevated);
+  --radius-card: var(--radius-card);
+  --radius-button: var(--radius-button);
+  --radius-pill: var(--radius-pill);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-sora);
+}
+
+body {
+  background: radial-gradient(circle at 20% 20%, rgba(92, 100, 255, 0.08), transparent 35%),
+    radial-gradient(circle at 80% 0%, rgba(210, 60, 161, 0.06), transparent 28%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+* {
+  border-color: var(--border);
+}
+
+a,
+button {
+  outline-offset: 3px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--brand-1) 60%, transparent);
+  color: var(--text);
+}
