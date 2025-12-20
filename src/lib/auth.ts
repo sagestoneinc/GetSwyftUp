@@ -2,6 +2,7 @@ import NextAuth, { type Session, type User } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import type { JWT } from "next-auth/jwt";
 import { z } from "zod";
+import { Role } from "@/config/roles";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -43,16 +44,23 @@ export const authConfig = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: User & { role?: string } }) {
+    async jwt({ token, user }: { token: JWT; user?: User & { role?: Role } }) {
       if (user && "role" in user) {
-        token.role = user.role;
+        const incomingRole = user.role;
+        const isValidRole =
+          typeof incomingRole === "string" && Object.values(Role).includes(incomingRole as Role);
+        if (isValidRole) {
+          token.role = incomingRole;
+        }
       }
       return token;
     },
     async session({ session, token }: { session: Session; token: JWT }) {
       if (session.user) {
         session.user.id = token.sub;
-        session.user.role = typeof token.role === "string" ? token.role : undefined;
+        const tokenRole = typeof token.role === "string" ? (token.role as Role) : undefined;
+        const isValidRole = tokenRole ? Object.values(Role).includes(tokenRole) : false;
+        session.user.role = isValidRole ? tokenRole : undefined;
       }
       return session;
     },

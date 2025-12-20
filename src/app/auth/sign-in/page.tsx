@@ -19,12 +19,12 @@ export default function SignInPage() {
       redirect: false,
       email,
       password,
-      callbackUrl: "/app",
+      callbackUrl: "/dashboard",
     });
     if (res?.error) {
       setError("Invalid credentials");
     } else {
-      window.location.href = "/app";
+      window.location.href = "/dashboard";
     }
   };
 
