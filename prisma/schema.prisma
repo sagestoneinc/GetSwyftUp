@@ -111,7 +111,7 @@ model ContractorProfile {
   cards     Card[]
   payoutMethods PayoutMethod[]
   wallet    WalletAccount? @relation("ContractorWallet", fields: [walletId], references: [id])
-  walletId  String? @unique
+  walletId  String? @unique(map: "contractor_wallet_id_unique")
 }
 
 model Invite {
@@ -149,6 +149,7 @@ model WalletAccount {
   currency      String
   balanceCached Decimal            @db.Decimal(14, 2) @default(0)
   ledgerEntries LedgerEntry[]
+  /// Inverse side of the contractor wallet relation.
   contractorProfile ContractorProfile? @relation("ContractorWallet")
 }
 
