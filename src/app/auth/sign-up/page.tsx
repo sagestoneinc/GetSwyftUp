@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("demo1234!");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [accountType, setAccountType] = useState<"company" | "contractor">("company");
   const [inviteToken, setInviteToken] = useState("");
@@ -28,7 +28,7 @@ export default function SignUpPage() {
       callbackUrl: "/app",
     });
     if (res?.error) {
-      setMessage("Please use the shared demo password to create a workspace session.");
+      setMessage("Invalid credentials. Please confirm your access details.");
       return;
     }
     setMessage("Workspace created. Redirecting…");
@@ -42,7 +42,7 @@ export default function SignUpPage() {
           <p className="text-sm uppercase tracking-[0.2em] text-muted">Create workspace</p>
           <h1 className="font-display text-3xl font-semibold">Get started with SwyftUp</h1>
           <p className="text-sm text-muted">
-            Use any email and the shared demo password to explore the dashboard. Roles default to Finance.
+            Use your issued credentials to explore the dashboard. Roles default to Finance.
           </p>
         </CardHeader>
         <CardContent>
@@ -88,7 +88,6 @@ export default function SignUpPage() {
             <div className="space-y-2">
               <label className="text-sm text-muted">Password</label>
               <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required />
-              <p className="text-xs text-muted">Demo password defaults to demo1234! (configurable via env)</p>
             </div>
             {message && <p className="text-sm text-[var(--accent)]">{message}</p>}
             <Button className="w-full" type="submit">
