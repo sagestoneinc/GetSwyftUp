@@ -11,10 +11,16 @@ export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("demo1234!");
   const [message, setMessage] = useState<string | null>(null);
+  const [accountType, setAccountType] = useState<"company" | "contractor">("company");
+  const [inviteToken, setInviteToken] = useState("");
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setMessage(null);
+    if (accountType === "contractor" && !inviteToken) {
+      setMessage("Contractor sign-up requires a valid invite token.");
+      return;
+    }
     const res = await signIn("credentials", {
       redirect: false,
       email,
@@ -41,6 +47,28 @@ export default function SignUpPage() {
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={onSubmit}>
+            <div className="flex items-center justify-between rounded-[var(--radius-card)] border border-white/5 p-3 text-sm">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="accountType"
+                  value="company"
+                  checked={accountType === "company"}
+                  onChange={() => setAccountType("company")}
+                />
+                I&apos;m a Company
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="accountType"
+                  value="contractor"
+                  checked={accountType === "contractor"}
+                  onChange={() => setAccountType("contractor")}
+                />
+                I&apos;m a Contractor (invited)
+              </label>
+            </div>
             <div className="space-y-2">
               <label className="text-sm text-muted">Work email</label>
               <Input
@@ -51,6 +79,12 @@ export default function SignUpPage() {
                 required
               />
             </div>
+            {accountType === "contractor" && (
+              <div className="space-y-2">
+                <label className="text-sm text-muted">Invite token</label>
+                <Input value={inviteToken} onChange={(e) => setInviteToken(e.target.value)} placeholder="Required" />
+              </div>
+            )}
             <div className="space-y-2">
               <label className="text-sm text-muted">Password</label>
               <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required />

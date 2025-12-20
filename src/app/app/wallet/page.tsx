@@ -88,6 +88,18 @@ export default function WalletPage() {
             </form>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader>
+            <p className="text-sm uppercase tracking-[0.2em] text-muted">Fast bank withdrawal</p>
+            <p className="text-sm text-muted">Powered by Wise — real rates, transparent fees</p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button asChild className="w-full">
+              <a href="/app/wallet/withdraw">Open withdrawal flow</a>
+            </Button>
+            <p className="text-sm text-muted">Best for contractors seeking low FX and quick arrivals.</p>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>

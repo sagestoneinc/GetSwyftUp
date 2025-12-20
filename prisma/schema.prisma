@@ -33,9 +33,15 @@ enum LedgerType {
   DEBIT
 }
 
+enum LedgerStatus {
+  PENDING
+  POSTED
+  REVERSED
+}
+
 enum PayoutStatus {
   PENDING
-  APPROVED
+  PROCESSING
   PAID
   FAILED
 }
@@ -148,6 +154,8 @@ model LedgerEntry {
   currency      String
   referenceType String
   referenceId   String
+  status        LedgerStatus  @default(POSTED)
+  metadataJson  Json?
   createdAt     DateTime      @default(now())
 }
 
@@ -159,12 +167,17 @@ model Payout {
   invoiceId    String?
   contractor   ContractorProfile @relation(fields: [contractorId], references: [id])
   contractorId String
-  amount       Decimal           @db.Decimal(14, 2)
-  currency     String
-  status       PayoutStatus
-  providerRef  String?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  amount             Decimal           @db.Decimal(14, 2)
+  sourceCurrency     String
+  destinationCurrency String
+  fxRate             Decimal           @db.Decimal(14, 6)
+  fxFee              Decimal           @db.Decimal(14, 2)
+  provider           String
+  providerRef        String?
+  status             PayoutStatus
+  estimatedArrival   DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 }
 
 model Card {
@@ -175,6 +188,7 @@ model Card {
   contractorId String
   last4        String
   status       CardStatus
+  provider     String
   limitsJson   Json
   transactions CardTransaction[]
   createdAt    DateTime          @default(now())
@@ -223,4 +237,38 @@ model Job {
   runAt     DateTime
   attempts  Int       @default(0)
   createdAt DateTime  @default(now())
+}
+
+model PayoutMethod {
+  id           String            @id @default(cuid())
+  contractor   ContractorProfile @relation(fields: [contractorId], references: [id])
+  contractorId String
+  provider     String
+  bankCountry  String
+  currency     String
+  accountHolder String
+  metadataJson Json
+  createdAt    DateTime @default(now())
+}
+
+model FXQuote {
+  id                 String   @id @default(cuid())
+  provider           String
+  sourceCurrency     String
+  destinationCurrency String
+  rate               Decimal  @db.Decimal(14, 6)
+  fee                Decimal  @db.Decimal(14, 2)
+  expiresAt          DateTime
+  createdAt          DateTime @default(now())
+}
+
+model OnboardingState {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  role      Role
+  step      String
+  data      Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -7,6 +7,7 @@ export type InvoiceStatus = "draft" | "submitted" | "approved" | "scheduled" | "
 export type PayoutStatus = "pending" | "approved" | "paid" | "failed";
 export type CardStatus = "active" | "frozen" | "closed";
 export type LedgerType = "CREDIT" | "DEBIT";
+export type LedgerState = "pending" | "posted" | "reversed";
 
 type Org = {
   id: string;
@@ -63,6 +64,8 @@ export type LedgerEntry = {
   currency: string;
   referenceType: string;
   referenceId: string;
+  status: LedgerState;
+  metadata?: Record<string, unknown>;
   createdAt: string;
   memo?: string;
 };
@@ -73,9 +76,14 @@ export type Payout = {
   contractorId: string;
   invoiceId?: string;
   amount: number;
-  currency: string;
+  sourceCurrency: string;
+  destinationCurrency: string;
+  fxRate: number;
+  fxFee: number;
+  provider: "WISE";
   status: PayoutStatus;
   providerRef?: string;
+  estimatedArrival?: string;
   createdAt: string;
 };
 
@@ -85,6 +93,7 @@ export type Card = {
   contractorId: string;
   last4: string;
   status: CardStatus;
+  provider: string;
   limits: { daily: number; monthly: number };
 };
 
@@ -128,6 +137,47 @@ export type Job = {
   createdAt: string;
 };
 
+export type Invite = {
+  id: string;
+  orgId: string;
+  email: string;
+  token: string;
+  status: "pending" | "accepted" | "expired";
+  expiresAt: string;
+  role: Role;
+};
+
+export type PayoutMethod = {
+  id: string;
+  contractorId: string;
+  provider: "WISE";
+  bankCountry: string;
+  currency: string;
+  accountHolder: string;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+};
+
+export type FXQuote = {
+  id: string;
+  provider: "WISE";
+  sourceCurrency: string;
+  destinationCurrency: string;
+  rate: number;
+  fee: number;
+  expiresAt: string;
+  createdAt: string;
+};
+
+export type OnboardingState = {
+  id: string;
+  userId: string;
+  role: Role;
+  step: string;
+  data?: Record<string, unknown>;
+  updatedAt: string;
+};
+
 type MockDatabase = {
   org: Org;
   users: User[];
@@ -141,6 +191,10 @@ type MockDatabase = {
   audit: AuditLog[];
   tickets: SupportTicket[];
   jobs: Job[];
+  invites: Invite[];
+  payoutMethods: PayoutMethod[];
+  fxQuotes: FXQuote[];
+  onboarding: OnboardingState[];
 };
 
 const randomId = () =>
@@ -268,6 +322,7 @@ const seedData: MockDatabase = {
       currency: "USD",
       referenceType: "funding",
       referenceId: "fund_1",
+      status: "posted",
       createdAt: "2025-12-05T10:00:00Z",
       memo: "Initial treasury load",
     },
@@ -279,6 +334,7 @@ const seedData: MockDatabase = {
       currency: "USD",
       referenceType: "payout",
       referenceId: "pay_1",
+      status: "posted",
       createdAt: "2025-12-11T08:00:00Z",
       memo: "Payout to Diego",
     },
@@ -290,6 +346,7 @@ const seedData: MockDatabase = {
       currency: "USD",
       referenceType: "payout",
       referenceId: "pay_1",
+      status: "posted",
       createdAt: "2025-12-11T08:05:00Z",
       memo: "Wallet top up",
     },
@@ -301,7 +358,11 @@ const seedData: MockDatabase = {
       contractorId: "ctr_diego",
       invoiceId: "inv_101",
       amount: 18000,
-      currency: "USD",
+      sourceCurrency: "USD",
+      destinationCurrency: "USD",
+      fxRate: 1,
+      fxFee: 0,
+      provider: "WISE",
       status: "paid",
       providerRef: "sim-2881",
       createdAt: "2025-12-11T08:00:00Z",
@@ -311,7 +372,11 @@ const seedData: MockDatabase = {
       orgId: "org_swyftup",
       contractorId: "ctr_mina",
       amount: 5000,
-      currency: "USD",
+      sourceCurrency: "USD",
+      destinationCurrency: "MXN",
+      fxRate: 17.3,
+      fxFee: 22,
+      provider: "WISE",
       status: "pending",
       providerRef: "sim-2882",
       createdAt: "2025-12-14T06:00:00Z",
@@ -324,6 +389,7 @@ const seedData: MockDatabase = {
       contractorId: "ctr_diego",
       last4: "9921",
       status: "active",
+      provider: "Mock",
       limits: { daily: 1500, monthly: 10000 },
     },
     {
@@ -332,6 +398,7 @@ const seedData: MockDatabase = {
       contractorId: "ctr_mina",
       last4: "4114",
       status: "frozen",
+      provider: "Mock",
       limits: { daily: 800, monthly: 5000 },
     },
   ],
@@ -409,6 +476,46 @@ const seedData: MockDatabase = {
       createdAt: "2025-12-14T06:00:00Z",
     },
   ],
+  invites: [
+    {
+      id: "inv_ctr_sven",
+      orgId: "org_swyftup",
+      email: "sven@northdesign.se",
+      token: "invite_token_sven",
+      status: "pending",
+      expiresAt: "2025-12-30T00:00:00Z",
+      role: "CONTRACTOR",
+    },
+  ],
+  payoutMethods: [
+    {
+      id: "pm_ctr_diego",
+      contractorId: "ctr_diego",
+      provider: "WISE",
+      bankCountry: "US",
+      currency: "USD",
+      accountHolder: "Diego Alvarez",
+      metadata: { maskedAccount: "••••9210" },
+      createdAt: "2025-12-10T07:00:00Z",
+    },
+  ],
+  fxQuotes: [
+    {
+      id: "fx_usd_mxn",
+      provider: "WISE",
+      sourceCurrency: "USD",
+      destinationCurrency: "MXN",
+      rate: 17.3,
+      fee: 22,
+      expiresAt: "2025-12-20T23:59:59Z",
+      createdAt: "2025-12-20T06:00:00Z",
+    },
+  ],
+  onboarding: [
+    { id: "ob_owner", userId: "user_owner", role: "OWNER", step: "complete", updatedAt: "2025-12-15T00:00:00Z" },
+    { id: "ob_finance", userId: "user_finance", role: "FINANCE", step: "complete", updatedAt: "2025-12-15T00:00:00Z" },
+    { id: "ob_contractor", userId: "user_contractor", role: "CONTRACTOR", step: "payout_method", updatedAt: "2025-12-15T00:00:00Z" },
+  ],
 };
 
 let db: MockDatabase = structuredClone(seedData);
@@ -424,7 +531,17 @@ function pushAudit(actorUserId: string, action: string, metadata: Record<string,
   });
 }
 
-function addLedger(walletId: string, type: LedgerType, amount: number, referenceType: string, referenceId: string, memo?: string) {
+function addLedger(
+  walletId: string,
+  type: LedgerType,
+  amount: number,
+  referenceType: string,
+  referenceId: string,
+  memo?: string,
+  currency = "USD",
+  status: LedgerState = "posted",
+  metadata?: Record<string, unknown>,
+) {
   const cents = Math.round(amount * 100);
   const normalizedAmount = cents / 100;
   db.ledger.unshift({
@@ -432,9 +549,11 @@ function addLedger(walletId: string, type: LedgerType, amount: number, reference
     walletId,
     type,
     amount: normalizedAmount,
-    currency: "USD",
+    currency,
     referenceType,
     referenceId,
+    status,
+    metadata,
     createdAt: new Date().toISOString(),
     memo,
   });
@@ -574,9 +693,14 @@ export const createPayoutAction = async (formData: FormData) => {
     orgId: db.org.id,
     contractorId: parsed.data.contractorId,
     amount: parsed.data.amount,
-    currency: "USD",
+    sourceCurrency: "USD",
+    destinationCurrency: "USD",
+    fxRate: 1,
+    fxFee: 0,
+    provider: "WISE",
     status: "pending",
     providerRef: `sim-${randomShort(4)}`,
+    estimatedArrival: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     createdAt: new Date().toISOString(),
   };
 
@@ -608,12 +732,8 @@ export const processJobsAction = async () => {
         const payout = payoutId ? db.payouts.find((p) => p.id === payoutId) : undefined;
         if (payout) {
           payout.status = "paid";
-          addLedger("w_org", "DEBIT", payout.amount, "payout", payout.id, "Payout processed");
-          const contractorWallet = db.contractors.find((c) => c.id === payout.contractorId)?.walletId;
-          if (contractorWallet) {
-            addLedger(contractorWallet, "CREDIT", payout.amount, "payout", payout.id, "Contractor credited");
-          }
-          pushAudit("user_finance", "mark_payout_paid", { payoutId: payout.id });
+          addLedger("w_org", "DEBIT", payout.amount, "payout", payout.id, "Payout processed", payout.sourceCurrency, "posted");
+          pushAudit("user_finance", "mark_payout_paid", { payoutId: payout.id, provider: payout.provider });
         }
       }
 
@@ -628,12 +748,15 @@ export const issueCardAction = async (contractorId: string) => {
   "use server";
   const contractor = db.contractors.find((c) => c.id === contractorId);
   if (!contractor) throw new Error("Contractor not found");
+  const wallet = db.wallets.find((w) => w.ownerId === contractorId);
+  if (!wallet || wallet.balance <= 0) throw new Error("Insufficient balance to issue card");
   const card: Card = {
     id: `card_${randomShort(6)}`,
     orgId: db.org.id,
     contractorId,
     last4: randomShort(4),
     status: "active",
+    provider: "Mock",
     limits: { daily: 1000, monthly: 7500 },
   };
   db.cards.unshift(card);
@@ -666,4 +789,233 @@ export const seedAction = async () => {
   revalidatePath("/app/wallet");
   revalidatePath("/app/cards");
   revalidatePath("/app/support");
+};
+
+export const updateOrgProfileAction = async (formData: FormData) => {
+  "use server";
+  const parsed = z
+    .object({
+      name: z.string().min(2),
+      country: z.string().min(2),
+      website: z.string().optional(),
+      teamSize: z.string(),
+      payoutVolume: z.string(),
+      currency: z.string().min(2),
+    })
+    .safeParse({
+      name: formData.get("name"),
+      country: formData.get("country"),
+      website: formData.get("website") ?? undefined,
+      teamSize: formData.get("teamSize"),
+      payoutVolume: formData.get("payoutVolume"),
+      currency: formData.get("currency"),
+    });
+  if (!parsed.success) throw new Error("Invalid org profile");
+  db.org.name = parsed.data.name;
+  db.org.currency = parsed.data.currency;
+  upsertOnboardingStep("user_owner", "OWNER", "company_setup", parsed.data);
+  pushAudit("user_owner", "update_org_profile", parsed.data);
+  revalidatePath("/onboarding/company/setup");
+};
+
+export const completeCompanySetupAction = async () => {
+  "use server";
+  upsertOnboardingStep("user_owner", "OWNER", "complete");
+  revalidatePath("/app");
+};
+
+export const acceptInviteAction = async (token: string) => {
+  "use server";
+  const invite = db.invites.find((i) => i.token === token);
+  if (!invite) throw new Error("Invalid invite");
+  if (invite.status !== "pending") throw new Error("Invite already used");
+  invite.status = "accepted";
+  const contractor = db.contractors.find((c) => c.email === invite.email);
+  if (contractor) contractor.status = "onboarding";
+  db.onboarding.push({
+    id: `ob_${randomShort(6)}`,
+    userId: contractor?.id ?? invite.email,
+    role: invite.role,
+    step: "contractor_profile",
+    updatedAt: new Date().toISOString(),
+  });
+  pushAudit("user_owner", "accept_invite", { token });
+  revalidatePath(`/invite/${token}`);
+};
+
+export const upsertOnboardingStep = (userId: string, role: Role, step: string, data?: Record<string, unknown>) => {
+  const existing = db.onboarding.find((o) => o.userId === userId);
+  if (existing) {
+    existing.step = step;
+    existing.data = { ...(existing.data ?? {}), ...(data ?? {}) };
+    existing.updatedAt = new Date().toISOString();
+  } else {
+    db.onboarding.push({
+      id: `ob_${randomShort(6)}`,
+      userId,
+      role,
+      step,
+      data,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+};
+
+export const completeContractorProfileAction = async (formData: FormData) => {
+  "use server";
+  const parsed = z
+    .object({
+      contractorId: z.string(),
+      legalName: z.string().min(2),
+      displayName: z.string().optional(),
+      phone: z.string().optional(),
+      country: z.string().min(2),
+      city: z.string().min(1),
+    })
+    .safeParse({
+      contractorId: formData.get("contractorId"),
+      legalName: formData.get("legalName"),
+      displayName: formData.get("displayName"),
+      phone: formData.get("phone"),
+      country: formData.get("country"),
+      city: formData.get("city"),
+    });
+  if (!parsed.success) throw new Error("Invalid profile");
+  const contractor = db.contractors.find((c) => c.id === parsed.data.contractorId);
+  if (!contractor) throw new Error("Contractor not found");
+  contractor.name = parsed.data.legalName;
+  contractor.status = "onboarding";
+  upsertOnboardingStep(contractor.id, "CONTRACTOR", "payout_method", parsed.data);
+  revalidatePath("/onboarding/contractor/payout-method");
+};
+
+export const savePayoutMethodAction = async (formData: FormData) => {
+  "use server";
+  const parsed = z
+    .object({
+      contractorId: z.string(),
+      bankCountry: z.string(),
+      currency: z.string(),
+      accountHolder: z.string(),
+    })
+    .safeParse({
+      contractorId: formData.get("contractorId"),
+      bankCountry: formData.get("bankCountry"),
+      currency: formData.get("currency"),
+      accountHolder: formData.get("accountHolder"),
+    });
+  if (!parsed.success) throw new Error("Invalid payout method");
+  db.payoutMethods = db.payoutMethods.filter((pm) => pm.contractorId !== parsed.data.contractorId);
+  db.payoutMethods.push({
+    id: `pm_${randomShort(6)}`,
+    contractorId: parsed.data.contractorId,
+    provider: "WISE",
+    bankCountry: parsed.data.bankCountry,
+    currency: parsed.data.currency,
+    accountHolder: parsed.data.accountHolder,
+    metadata: { masked: "•••••" },
+    createdAt: new Date().toISOString(),
+  });
+  upsertOnboardingStep(parsed.data.contractorId, "CONTRACTOR", "card");
+  revalidatePath("/onboarding/contractor/card");
+};
+
+export const contractorCardDecisionAction = async (formData: FormData) => {
+  "use server";
+  const contractorId = String(formData.get("contractorId") ?? "");
+  const choice = String(formData.get("choice") ?? "skip");
+  if (!contractorId) throw new Error("Missing contractor");
+  if (choice === "issue") {
+    await issueCardAction(contractorId);
+  }
+  upsertOnboardingStep(contractorId, "CONTRACTOR", "complete");
+  revalidatePath("/app/cards");
+};
+
+const computeFxQuote = (sourceCurrency: string, destinationCurrency: string, amount: number): FXQuote => {
+  const rate = destinationCurrency === "MXN" ? 17.3 : destinationCurrency === "EUR" ? 0.91 : 1;
+  const fee = Math.max(5, amount * 0.003);
+  return {
+    id: `fx_${randomShort(6)}`,
+    provider: "WISE",
+    sourceCurrency,
+    destinationCurrency,
+    rate,
+    fee,
+    expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+    createdAt: new Date().toISOString(),
+  };
+};
+
+export const previewWiseQuoteAction = async (formData: FormData) => {
+  "use server";
+  const parsed = z
+    .object({
+      amount: z.coerce.number().positive(),
+      sourceCurrency: z.string(),
+      destinationCurrency: z.string(),
+    })
+    .safeParse({
+      amount: formData.get("amount"),
+      sourceCurrency: formData.get("sourceCurrency") ?? "USD",
+      destinationCurrency: formData.get("destinationCurrency"),
+    });
+  if (!parsed.success) throw new Error("Invalid quote request");
+  const quote = computeFxQuote(parsed.data.sourceCurrency, parsed.data.destinationCurrency, parsed.data.amount);
+  db.fxQuotes.unshift(quote);
+  revalidatePath("/app/wallet/withdraw");
+  return quote;
+};
+
+export const withdrawPayoutAction = async (formData: FormData) => {
+  "use server";
+  const parsed = z
+    .object({
+      contractorId: z.string(),
+      amount: z.coerce.number().positive(),
+      destinationCurrency: z.string(),
+    })
+    .safeParse({
+      contractorId: formData.get("contractorId"),
+      amount: formData.get("amount"),
+      destinationCurrency: formData.get("destinationCurrency"),
+    });
+  if (!parsed.success) throw new Error("Invalid withdrawal");
+  const contractorWallet = db.wallets.find((w) => w.ownerId === parsed.data.contractorId);
+  if (!contractorWallet) throw new Error("Wallet not found");
+  if (contractorWallet.balance < parsed.data.amount) throw new Error("Insufficient funds");
+  const quote = computeFxQuote(contractorWallet.currency, parsed.data.destinationCurrency, parsed.data.amount);
+  db.fxQuotes.unshift(quote);
+
+  const payout: Payout = {
+    id: `pay_${randomShort(6)}`,
+    orgId: db.org.id,
+    contractorId: parsed.data.contractorId,
+    amount: parsed.data.amount,
+    sourceCurrency: contractorWallet.currency,
+    destinationCurrency: parsed.data.destinationCurrency,
+    fxRate: quote.rate,
+    fxFee: quote.fee,
+    provider: "WISE",
+    status: "pending",
+    providerRef: `wise-${randomShort(6)}`,
+    estimatedArrival: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date().toISOString(),
+  };
+  db.payouts.unshift(payout);
+  addLedger(contractorWallet.id, "DEBIT", parsed.data.amount, "payout", payout.id, "Withdrawal requested", contractorWallet.currency, "pending", {
+    destinationCurrency: parsed.data.destinationCurrency,
+  });
+  db.jobs.unshift({
+    id: `job_${randomShort(6)}`,
+    type: "payout_status_refresh",
+    payload: { payoutId: payout.id },
+    status: "QUEUED",
+    runAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+    attempts: 0,
+    createdAt: new Date().toISOString(),
+  });
+  pushAudit("user_finance", "withdraw_requested", { payoutId: payout.id, provider: "WISE" });
+  revalidatePath("/app/wallet/withdraw");
+  revalidatePath("/app/wallet");
 };
