@@ -106,7 +106,7 @@ export function ContactForm() {
               Send Message
             </Button>
             <Button asChild variant="secondary" className="w-full sm:w-auto">
-              <Link href="#contact-form">Book a Demo</Link>
+              <Link href="/contact">Book a Demo</Link>
             </Button>
           </div>
         </form>

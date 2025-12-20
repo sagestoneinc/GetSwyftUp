@@ -26,8 +26,8 @@ export const authConfig = {
         const { email, password } = parsed.data;
         const authEmail = process.env.AUTH_EMAIL;
         const authPassword = process.env.AUTH_PASSWORD;
-        const superAdminEmail = "jesel@getswyftup.com";
-        const superAdminPassword = "Jesel123!";
+        const superAdminEmail = process.env.SUPER_ADMIN_EMAIL ?? "jesel@getswyftup.com";
+        const superAdminPassword = process.env.SUPER_ADMIN_PASSWORD ?? "Jesel123!";
 
         const matchesEnv = Boolean(authEmail && authPassword && email === authEmail && password === authPassword);
         const matchesSuperAdmin = email === superAdminEmail && password === superAdminPassword;
