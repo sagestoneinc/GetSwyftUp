@@ -10,6 +10,8 @@ const navLinks = [
   { label: "Pricing", href: "/pricing" },
 ];
 
+const AUTH_PATH = "/auth/sign-in";
+
 const features = [
   {
     title: "Unified onboarding",
@@ -120,7 +122,7 @@ export default function Home() {
               </p>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Button className="w-full sm:w-auto" asChild>
-                  <Link href="/auth/sign-in">Start a secure demo</Link>
+                  <Link href={AUTH_PATH}>Start a secure demo</Link>
                 </Button>
                 <Button variant="secondary" className="w-full sm:w-auto" asChild>
                   <Link href="/pricing">Compare plans</Link>

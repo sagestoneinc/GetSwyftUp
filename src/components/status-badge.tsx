@@ -17,6 +17,9 @@ const toneMap: Record<string, { tone: Tone; label: string }> = {
   open: { tone: "subtle", label: "Open" },
 };
 
+const formatLabel = (value: string) =>
+  !value ? "Unknown" : value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+
 export function StatusBadge({ status }: { status: string }) {
   if (!status) {
     return <Badge tone="subtle">Unknown</Badge>;
@@ -24,6 +27,6 @@ export function StatusBadge({ status }: { status: string }) {
   const key = status.toLowerCase();
   const mapped = toneMap[key];
   const tone = mapped?.tone ?? "subtle";
-  const label = mapped?.label ?? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  const label = mapped?.label ?? formatLabel(status);
   return <Badge tone={tone}>{label}</Badge>;
 }

@@ -24,11 +24,12 @@ export const authConfig = {
         if (!parsed.success) return null;
 
         const { email, password } = parsed.data;
-        const demoEmail = process.env.DEMO_EMAIL || "admin@swyftup.com";
-        const demoPassword = process.env.DEMO_PASSWORD || "demo1234!";
+        const demoPassword = process.env.DEMO_PASSWORD;
+        const demoEmail = process.env.DEMO_EMAIL;
+        if (!demoPassword) return null;
 
         const sharedPassword = password === demoPassword;
-        if (email === demoEmail && sharedPassword) {
+        if (demoEmail && email === demoEmail && sharedPassword) {
           return { id: "user_owner", name: "Amelia Chen", email, role: "OWNER" };
         }
 
