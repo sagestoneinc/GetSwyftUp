@@ -58,7 +58,7 @@ export default function WalletPage() {
                 await fundWalletAction(amount);
               }}
             >
-              <Input type="number" name="amount" placeholder="Amount (USD)" required />
+              <Input type="number" min="1" step="1" name="amount" placeholder="Amount (USD)" required />
               <Button type="submit" className="w-full">
                 Add funds
               </Button>
@@ -81,7 +81,7 @@ export default function WalletPage() {
                   </option>
                 ))}
               </Select>
-              <Input name="amount" type="number" placeholder="Amount (USD)" required />
+              <Input name="amount" type="number" min="1" step="1" placeholder="Amount (USD)" required />
               <Button type="submit" className="w-full">
                 Queue payout
               </Button>
