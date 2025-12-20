@@ -35,7 +35,7 @@ export default function SettingsPage() {
             <p className="text-sm text-muted">Webhook keys</p>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Input value="whsec_demo_live_key" readOnly />
+            <Input value="whsec_live_key" readOnly />
             <Button variant="secondary">Rotate key</Button>
             <p className="text-sm text-muted">Keys are mocked for now; integrate provider when ready.</p>
           </CardContent>

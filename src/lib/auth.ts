@@ -24,24 +24,14 @@ export const authConfig = {
         if (!parsed.success) return null;
 
         const { email, password } = parsed.data;
-        const demoPassword = process.env.DEMO_PASSWORD;
-        const demoEmail = process.env.DEMO_EMAIL;
-        if (!demoPassword) return null;
-
-        const sharedPassword = password === demoPassword;
-        if (demoEmail && email === demoEmail && sharedPassword) {
-          return { id: "user_owner", name: "Amelia Chen", email, role: "OWNER" };
+        const authEmail = process.env.AUTH_EMAIL;
+        const authPassword = process.env.AUTH_PASSWORD;
+        if (!authEmail || !authPassword) {
+          console.warn("AUTH_EMAIL or AUTH_PASSWORD not set; rejecting sign-in");
+          return null;
         }
-
-        if (email === "contractor@swyftup.com" && sharedPassword) {
-          return { id: "user_contractor", name: "Diego Alvarez", email, role: "CONTRACTOR" };
-        }
-
-        if (sharedPassword) {
-          return { id: `user_${email}`, name: email.split("@")[0], email, role: "FINANCE" };
-        }
-
-        return null;
+        if (email !== authEmail || password !== authPassword) return null;
+        return { id: "user_owner", name: "Workspace Owner", email, role: "OWNER" };
       },
     }),
   ],

@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function SignInPage() {
-  const [email, setEmail] = useState("admin@swyftup.com");
-  const [password, setPassword] = useState("demo1234!");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -34,9 +34,7 @@ export default function SignInPage() {
         <CardHeader className="space-y-2">
           <p className="text-sm uppercase tracking-[0.2em] text-muted">Welcome back</p>
           <h1 className="font-display text-3xl font-semibold">Sign in to SwyftUp</h1>
-          <p className="text-sm text-muted">
-            Use the demo credentials or the password set in your environment variables.
-          </p>
+          <p className="text-sm text-muted">Use your issued credentials to access the workspace.</p>
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={onSubmit}>
