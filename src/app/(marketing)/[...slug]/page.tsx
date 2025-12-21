@@ -47,6 +47,8 @@ export default async function MarketingDynamicPage({ params }: { params: Promise
       description={page.description}
       features={page.features}
       cta={page.cta}
+      sections={page.sections}
+      internalLinks={page.internalLinks}
       body={page.body}
     />
   );
