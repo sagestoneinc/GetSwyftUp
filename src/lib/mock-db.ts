@@ -2,7 +2,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { wiseProvider } from "@/lib/wise-provider";
 
-export type Role = "OWNER" | "ADMIN" | "FINANCE" | "CONTRACTOR";
+export type Role = "SUPER_ADMIN" | "OWNER" | "ADMIN" | "FINANCE" | "CONTRACTOR";
 export type ContractorStatus = "invited" | "onboarding" | "active";
 export type InvoiceStatus = "draft" | "submitted" | "approved" | "scheduled" | "paid" | "failed";
 export type PayoutStatus = "pending" | "approved" | "paid" | "failed";
@@ -208,10 +208,16 @@ const randomShort = (length = 6) => randomId().replace(/-/g, "").slice(-length);
 const orgName = process.env.ORG_NAME ?? "SwyftUp";
 const orgCurrency = process.env.ORG_CURRENCY ?? "USD";
 const ownerEmail = process.env.AUTH_EMAIL ?? "owner@example.com";
+const superAdminEmail = process.env.SUPER_ADMIN_EMAIL;
 
 const seedData: MockDatabase = {
   org: { id: "org_swyftup", name: orgName, currency: orgCurrency },
-  users: ownerEmail ? [{ id: "user_owner", name: "Workspace Owner", email: ownerEmail, role: "OWNER" }] : [],
+  users: [
+    ...(ownerEmail ? [{ id: "user_owner", name: "Workspace Owner", email: ownerEmail, role: "OWNER" }] : []),
+    ...(superAdminEmail
+      ? [{ id: "user_super_admin", name: "Super Admin", email: superAdminEmail, role: "SUPER_ADMIN" }]
+      : []),
+  ],
   contractors: [],
   invoices: [],
   wallets: [

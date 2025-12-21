@@ -21,7 +21,7 @@ export default function ApprovalsPage() {
   const [amount, setAmount] = useState(50000);
   const [selectedId, setSelectedId] = useState(items[0]?.id);
   const role = useRole();
-  const unauthorized = ![Role.OWNER, Role.FINANCE_ADMIN].includes(role);
+  const unauthorized = ![Role.SUPER_ADMIN, Role.OWNER, Role.FINANCE_ADMIN].includes(role);
 
   const filtered = useMemo(
     () =>

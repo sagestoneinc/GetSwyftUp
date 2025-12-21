@@ -16,7 +16,7 @@ export default function ContractorProfilePage({ params }: { params: { id: string
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Overview");
   const role = useRole();
 
-  if (![Role.OWNER, Role.FINANCE_ADMIN].includes(role)) {
+  if (![Role.SUPER_ADMIN, Role.OWNER, Role.FINANCE_ADMIN].includes(role)) {
     return <p className="text-sm text-muted">You do not have access to this contractor profile.</p>;
   }
 

@@ -9,13 +9,14 @@ export type CurrentUser = {
 
 export async function getCurrentUser(): Promise<CurrentUser> {
   const session = await auth();
-  const defaultRole =
-    (process.env.NEXT_PUBLIC_DEFAULT_ROLE as Role | undefined) ??
-    Role.OWNER;
+  const envRole = process.env.NEXT_PUBLIC_DEFAULT_ROLE as Role | undefined;
+  const defaultRole = envRole && Object.values(Role).includes(envRole) ? envRole : Role.OWNER;
+  const sessionRole = session?.user?.role as Role | undefined;
+  const resolvedRole = sessionRole && Object.values(Role).includes(sessionRole) ? sessionRole : defaultRole;
 
   return {
     id: session?.user?.id ?? "demo-user",
     name: session?.user?.name ?? "Demo User",
-    role: session?.user?.role ?? defaultRole,
+    role: resolvedRole,
   };
 }

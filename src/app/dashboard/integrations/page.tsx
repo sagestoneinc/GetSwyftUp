@@ -1,53 +1,85 @@
+import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export default function IntegrationsPage() {
+  const wiseConfigured = Boolean(process.env.WISE_API_KEY?.trim());
+  const issuerConfigured = Boolean(process.env.CARD_ISSUER_API_KEY?.trim());
+  const integrations = [
+    {
+      title: "Payments & FX quotes",
+      provider: "Wise sandbox",
+      status: wiseConfigured ? { label: "Ready", tone: "success" } : { label: "Add WISE_API_KEY", tone: "warning" },
+      description: "Contractor payouts and FX previews run through Wise mocks.",
+      actionLabel: "View payouts",
+      href: "/dashboard/payouts",
+      meta: wiseConfigured ? "Sandbox token detected for payouts/FX." : "Add your sandbox API key to enable calls.",
+    },
+    {
+      title: "Withdrawals",
+      provider: "Wise transfers",
+      status: wiseConfigured ? { label: "Ready", tone: "success" } : { label: "Add WISE_API_KEY", tone: "warning" },
+      description: "Bank withdrawals reuse Wise recipients + transfers with status polling.",
+      actionLabel: "Open withdrawal flow",
+      href: "/app/wallet/withdraw",
+      meta: "Runs payout_status_refresh jobs to mark transfers paid.",
+    },
+    {
+      title: "Card issuance",
+      provider: "Virtual issuer sandbox",
+      status: issuerConfigured
+        ? { label: "Ready", tone: "success" }
+        : { label: "Add CARD_ISSUER_API_KEY", tone: "warning" },
+      description: "Virtual cards are issued from the mock issuer; swap keys to talk to your provider.",
+      actionLabel: "Manage cards",
+      href: "/dashboard/cards",
+      meta: issuerConfigured ? "Issuer sandbox key detected." : "Cards run in mock mode until issuer keys are set.",
+    },
+  ] as const;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm uppercase tracking-[0.15em] text-muted">Ecosystem</p>
           <h1 className="font-display text-2xl font-semibold">Integrations</h1>
+          <p className="text-sm text-muted">
+            Super Admin can manage provider keys via environment variables. Wise powers payouts + withdrawals; card
+            issuance keys control the virtual card rail.
+          </p>
         </div>
-        <Badge tone="subtle">Coming soon</Badge>
+        <div className="flex flex-wrap gap-2">
+          <Badge tone={wiseConfigured ? "success" : "warning"}>
+            {wiseConfigured ? "Wise sandbox detected" : "Wise key missing"}
+          </Badge>
+          <Badge tone={issuerConfigured ? "success" : "warning"}>
+            {issuerConfigured ? "Issuer ready" : "Issuer key missing"}
+          </Badge>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-panel/80">
-          <CardHeader>
-            <p className="text-sm text-muted">Accounting</p>
-            <h3 className="font-semibold">Connect accounting</h3>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted">QuickBooks, NetSuite, Xero.</p>
-            <Button className="mt-3" variant="secondary">
-              Connect
-            </Button>
-          </CardContent>
-        </Card>
-        <Card className="bg-panel/80">
-          <CardHeader>
-            <p className="text-sm text-muted">Webhooks</p>
-            <h3 className="font-semibold">Webhook/API keys</h3>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted">Get notified on payout events.</p>
-            <Button className="mt-3" variant="secondary">
-              Manage
-            </Button>
-          </CardContent>
-        </Card>
-        <Card className="bg-panel/80">
-          <CardHeader>
-            <p className="text-sm text-muted">Treasury</p>
-            <h3 className="font-semibold">Provider sync</h3>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted">Coming soon: real-time balances.</p>
-            <Badge tone="subtle">Soon</Badge>
-          </CardContent>
-        </Card>
+        {integrations.map((integration) => (
+          <Card key={integration.title} className="bg-panel/80">
+            <CardHeader className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.15em] text-muted">{integration.provider}</p>
+                  <h3 className="font-semibold">{integration.title}</h3>
+                </div>
+                <Badge tone={integration.status.tone}>{integration.status.label}</Badge>
+              </div>
+              <p className="text-sm text-muted">{integration.description}</p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-xs text-muted">{integration.meta}</p>
+              <Button asChild variant="secondary" className="w-full">
+                <Link href={integration.href}>{integration.actionLabel}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );
