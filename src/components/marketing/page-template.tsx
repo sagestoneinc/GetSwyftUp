@@ -94,7 +94,7 @@ export function MarketingPageTemplate({ title, description, features, cta, secti
 
         {internalLinks && internalLinks.length > 0 && (
           <section className="space-y-3 rounded-[var(--radius-card)] border border-white/5 bg-white/5 p-6">
-            <h2 className="font-display text-xl font-semibold text-text">Suggested internal links</h2>
+            <h2 className="font-display text-xl font-semibold text-text">Suggested Internal Links</h2>
             <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-muted">
               {internalLinks.map((link) => (
                 <li key={link.href}>
