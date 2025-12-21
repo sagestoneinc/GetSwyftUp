@@ -7,6 +7,11 @@ type PageParams = {
   slug?: string[];
 };
 
+function buildKeywords(page: { primaryKeyword?: string; secondaryKeywords?: string[] }) {
+  const keywords = [page.primaryKeyword, ...(page.secondaryKeywords || [])].filter(Boolean) as string[];
+  return keywords.length > 0 ? keywords : undefined;
+}
+
 export function generateStaticParams() {
   return marketingStaticParams();
 }
@@ -20,12 +25,10 @@ export async function generateMetadata({ params }: { params: Promise<PageParams>
     return {};
   }
 
-  const keywords = [page.primaryKeyword, ...(page.secondaryKeywords || [])].filter(Boolean);
-
   return {
     title: page.seoTitle,
     description: page.seoDescription,
-    keywords: keywords.length > 0 ? keywords : undefined,
+    keywords: buildKeywords(page),
   };
 }
 
