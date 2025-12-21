@@ -8,7 +8,7 @@ type PageParams = {
 };
 
 function buildKeywords(page: { primaryKeyword?: string; secondaryKeywords?: string[] }) {
-  const keywords = [page.primaryKeyword, ...(page.secondaryKeywords || [])].filter(Boolean) as string[];
+  const keywords = [page.primaryKeyword, ...(page.secondaryKeywords || [])].filter((keyword): keyword is string => Boolean(keyword));
   return keywords.length > 0 ? keywords : undefined;
 }
 

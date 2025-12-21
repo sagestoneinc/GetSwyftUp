@@ -60,8 +60,8 @@ export function MarketingPageTemplate({ title, description, features, cta, secti
                 ))}
                 {section.bullets && (
                   <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-muted">
-                    {section.bullets.map((bullet) => (
-                      <li key={bullet}>{bullet}</li>
+                    {section.bullets.map((bullet, idx) => (
+                      <li key={idx}>{bullet}</li>
                     ))}
                   </ul>
                 )}
