@@ -7,6 +7,14 @@ type PageParams = {
   slug?: string[];
 };
 
+function buildKeywords(page: { primaryKeyword?: string; secondaryKeywords?: string[] }) {
+  const keywords = [
+    ...(page.primaryKeyword ? [page.primaryKeyword] : []),
+    ...(page.secondaryKeywords ?? []),
+  ];
+  return keywords.length > 0 ? keywords : undefined;
+}
+
 export function generateStaticParams() {
   return marketingStaticParams();
 }
@@ -23,6 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<PageParams>
   return {
     title: page.seoTitle,
     description: page.seoDescription,
+    keywords: buildKeywords(page),
   };
 }
 
@@ -41,6 +50,8 @@ export default async function MarketingDynamicPage({ params }: { params: Promise
       description={page.description}
       features={page.features}
       cta={page.cta}
+      sections={page.sections}
+      internalLinks={page.internalLinks}
       body={page.body}
     />
   );
