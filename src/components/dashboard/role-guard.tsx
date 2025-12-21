@@ -1,6 +1,6 @@
 'use client';
 
-import type { Role } from "@/config/roles";
+import { Role } from "@/config/roles";
 import { useRole } from "@/components/dashboard/role-provider";
 
 export function RoleGuard({
@@ -13,7 +13,7 @@ export function RoleGuard({
   fallback?: React.ReactNode;
 }) {
   const role = useRole();
-  if (allowed.includes(role)) return <>{children}</>;
+  if (role === Role.SUPER_ADMIN || allowed.includes(role)) return <>{children}</>;
   return (
     fallback ?? (
       <div className="rounded-[var(--radius-card)] border border-white/10 bg-panel/70 p-6 text-sm text-muted">

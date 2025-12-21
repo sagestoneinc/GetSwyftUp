@@ -15,7 +15,7 @@ export default function ReportsPage() {
     () => Object.fromEntries(getContractors().map((c) => [c.id, c.name])),
     [],
   );
-  const unauthorized = ![Role.OWNER, Role.FINANCE_ADMIN].includes(role);
+  const unauthorized = ![Role.SUPER_ADMIN, Role.OWNER, Role.FINANCE_ADMIN].includes(role);
 
   const escapeCsvValue = (value: unknown) => {
     const str = String(value ?? "");

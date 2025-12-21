@@ -30,7 +30,12 @@ Visit `http://localhost:3000`.
 
 ### Authentication
 - Set `AUTH_EMAIL` and `AUTH_PASSWORD` in your environment to control workspace access (NextAuth credentials).
+- Add `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_PASSWORD` for a full-access Super Admin login that bypasses role-specific guards.
 - Auth routes: `/auth/sign-in`, `/auth/sign-up`. Protected app routes live under `/app`.
+
+### Integration toggles
+- `WISE_API_KEY` marks payments + withdrawals (Wise sandbox) as ready in the dashboard and powers FX quote previews.
+- `CARD_ISSUER_API_KEY` marks the virtual card rail as configured; cards stay in mock mode until an issuer key is present.
 
 ### Mock data, jobs, and seeding
 - UI data is served from an in-memory mock store that mirrors the Prisma schema and starts empty.

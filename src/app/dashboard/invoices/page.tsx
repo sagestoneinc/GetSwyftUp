@@ -17,7 +17,7 @@ export default function InvoicesPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const role = useRole();
-  const unauthorized = ![Role.OWNER, Role.FINANCE_ADMIN].includes(role);
+  const unauthorized = ![Role.SUPER_ADMIN, Role.OWNER, Role.FINANCE_ADMIN].includes(role);
 
   const filtered = useMemo(
     () =>
