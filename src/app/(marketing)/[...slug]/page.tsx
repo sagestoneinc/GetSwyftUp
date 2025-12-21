@@ -20,15 +20,12 @@ export async function generateMetadata({ params }: { params: Promise<PageParams>
     return {};
   }
 
-  const keywords =
-    page.secondaryKeywords || page.primaryKeyword
-      ? [page.primaryKeyword, ...(page.secondaryKeywords || [])].filter(Boolean)
-      : undefined;
+  const keywords = [page.primaryKeyword, ...(page.secondaryKeywords || [])].filter(Boolean);
 
   return {
     title: page.seoTitle,
     description: page.seoDescription,
-    keywords,
+    keywords: keywords.length > 0 ? keywords : undefined,
   };
 }
 
