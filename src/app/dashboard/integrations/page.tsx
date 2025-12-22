@@ -10,7 +10,9 @@ export default function IntegrationsPage() {
     {
       title: "Payments & FX quotes",
       provider: "Wise sandbox",
-      status: wiseConfigured ? { label: "Ready", tone: "success" } : { label: "Add WISE_API_KEY", tone: "warning" },
+      status: wiseConfigured
+        ? { label: "Ready", tone: "success" as const }
+        : { label: "Add WISE_API_KEY", tone: "warning" as const },
       description: "Contractor payouts and FX previews run through Wise mocks.",
       actionLabel: "View payouts",
       href: "/dashboard/payouts",
@@ -19,7 +21,9 @@ export default function IntegrationsPage() {
     {
       title: "Withdrawals",
       provider: "Wise transfers",
-      status: wiseConfigured ? { label: "Ready", tone: "success" } : { label: "Add WISE_API_KEY", tone: "warning" },
+      status: wiseConfigured
+        ? { label: "Ready", tone: "success" as const }
+        : { label: "Add WISE_API_KEY", tone: "warning" as const },
       description: "Bank withdrawals reuse Wise recipients + transfers with status polling.",
       actionLabel: "Open withdrawal flow",
       href: "/app/wallet/withdraw",
@@ -29,8 +33,8 @@ export default function IntegrationsPage() {
       title: "Card issuance",
       provider: "Virtual issuer sandbox",
       status: issuerConfigured
-        ? { label: "Ready", tone: "success" }
-        : { label: "Add CARD_ISSUER_API_KEY", tone: "warning" },
+        ? { label: "Ready", tone: "success" as const }
+        : { label: "Add CARD_ISSUER_API_KEY", tone: "warning" as const },
       description: "Virtual cards are issued from the mock issuer; swap keys to talk to your provider.",
       actionLabel: "Manage cards",
       href: "/dashboard/cards",
