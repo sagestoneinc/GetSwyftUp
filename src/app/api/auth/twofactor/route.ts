@@ -1,45 +1,102 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { disableTwoFactor, enableTwoFactor, getEnrollment } from "@/lib/twofactor";
+import { generateTwoFactorSecret, storeEnrollment, getEnrollment } from "@/lib/twofactor";
 
-export async function GET() {
+/**
+ * GET /api/auth/twofactor
+ * Initiate 2FA enrollment and return TOTP secret
+ */
+export async function GET(request: NextRequest) {
   const session = await auth();
-  if (!session?.user) {
+
+  // Check authentication
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const record = getEnrollment(session.user.id);
-  const label = encodeURIComponent(session.user.email ?? session.user.name ?? session.user.id);
-  const otpauthUrl = `otpauth://totp/SwyftUp:${label}?secret=${record.secret}&issuer=SwyftUp`;
-  return NextResponse.json({
-    enabled: record.enabled,
-    secret: record.enabled ? undefined : record.secret,
-    otpauthUrl: record.enabled ? undefined : otpauthUrl,
-    recoveryCodes: record.enabled ? undefined : record.recoveryCodes,
-  });
+
+  const userId = session.user.id; // Now guaranteed to be string
+
+  try {
+    // Generate new enrollment
+    const enrollment = await generateTwoFactorSecret();
+
+    // Store temporarily (not yet confirmed by user)
+    storeEnrollment(`${userId}:pending`, enrollment);
+
+    // Create OTPAuth URL for QR code generation
+    const email = session.user.email ?? "user@example.com";
+    const label = encodeURIComponent(`SwyftUp:${email}`);
+    const otpauthUrl = `otpauth://totp/${label}?secret=${enrollment.secret}&issuer=SwyftUp`;
+
+    return NextResponse.json({
+      secret: enrollment.secret,
+      otpauthUrl,
+      backupCodes: enrollment.backupCodes,
+    });
+  } catch (error) {
+    console.error("Failed to generate 2FA secret:", error);
+    return NextResponse.json(
+      { error: "Failed to generate 2FA secret" },
+      { status: 500 }
+    );
+  }
 }
 
-export async function POST(request: Request) {
+/**
+ * POST /api/auth/twofactor
+ * Verify and confirm 2FA enrollment
+ */
+export async function POST(request: NextRequest) {
   const session = await auth();
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  const body = await request.json();
-  const code = typeof body.code === "string" ? body.code.trim() : "";
-  if (!code) {
-    return NextResponse.json({ error: "Missing code" }, { status: 400 });
-  }
-  const result = enableTwoFactor(session.user.id, code);
-  if (!result.success) {
-    return NextResponse.json({ error: result.reason ?? "Unable to verify code" }, { status: 400 });
-  }
-  return NextResponse.json({ enabled: true, recoveryCodes: result.recoveryCodes });
-}
 
-export async function DELETE() {
-  const session = await auth();
-  if (!session?.user) {
+  // Check authentication
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  disableTwoFactor(session.user.id);
-  return NextResponse.json({ enabled: false });
+
+  const userId = session.user.id; // Now guaranteed to be string
+
+  try {
+    const body = await request.json();
+    const { code } = body;
+
+    if (!code || typeof code !== "string") {
+      return NextResponse.json({ error: "Invalid code" }, { status: 400 });
+    }
+
+    // Get the pending enrollment
+    const pendingEnrollment = getEnrollment(`${userId}:pending`);
+
+    if (!pendingEnrollment) {
+      return NextResponse.json(
+        { error: "No pending enrollment found" },
+        { status: 400 }
+      );
+    }
+
+    // Verify the code dynamically import to ensure server-only execution
+    const { verifyTOTPCode } = await import("@/lib/twofactor");
+    const isValid = await verifyTOTPCode(pendingEnrollment.secret, code);
+
+    if (!isValid) {
+      return NextResponse.json({ error: "Invalid code" }, { status: 400 });
+    }
+
+    // Move enrollment from pending to confirmed
+    storeEnrollment(userId, pendingEnrollment);
+
+    // TODO: Store in database and clear pending enrollment
+
+    return NextResponse.json({
+      success: true,
+      message: "2FA enrollment confirmed",
+      backupCodes: pendingEnrollment.backupCodes,
+    });
+  } catch (error) {
+    console.error("Failed to confirm 2FA enrollment:", error);
+    return NextResponse.json(
+      { error: "Failed to confirm enrollment" },
+      { status: 500 }
+    );
+  }
 }

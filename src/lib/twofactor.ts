@@ -1,133 +1,98 @@
-import { createHmac, randomBytes } from "crypto";
-import { getOnboardingState } from "@/lib/onboarding-state";
-import { recordActivity } from "@/lib/activity-log";
-import { sendNotification } from "@/lib/notification-service";
-import { Role } from "@/config/roles";
+"use server";
 
-type TwoFactorRecord = {
+import { z } from "zod";
+
+export type TwoFactorEnrollment = {
   secret: string;
-  enabled: boolean;
-  recoveryCodes: string[];
-  trustedUntil?: Record<string, number>;
+  backupCodes: string[];
+  enrolledAt: string;
 };
 
-const store = new Map<string, TwoFactorRecord>();
+// In-memory storage (replace with database in production)
+const enrollments = new Map<string, TwoFactorEnrollment>();
 
-const generateSecret = () => randomBytes(20).toString("hex");
+/**
+ * Generate a TOTP secret for two-factor authentication
+ * Uses the Node.js crypto module which must be server-side only
+ */
+export async function generateTwoFactorSecret(): Promise<TwoFactorEnrollment> {
+  // Use dynamic import to ensure this only runs server-side
+  const { createHmac, randomBytes } = await import("crypto");
+  
+  // Generate a random secret
+  const secret = randomBytes(20).toString("base64");
+  
+  // Generate backup codes
+  const backupCodes = Array.from({ length: 10 }, () =>
+    randomBytes(6).toString("hex")
+  );
 
-const generateRecoveryCodes = () =>
-  Array.from({ length: 10 }, () => randomBytes(5).toString("hex"));
-
-function hotp(secret: string, counter: number) {
-  const buffer = Buffer.alloc(8);
-  buffer.writeBigUInt64BE(BigInt(counter));
-  const hmac = createHmac("sha1", Buffer.from(secret, "hex")).update(buffer).digest();
-  const offset = hmac[hmac.length - 1] & 0xf;
-  const code =
-    ((hmac[offset] & 0x7f) << 24) |
-    ((hmac[offset + 1] & 0xff) << 16) |
-    ((hmac[offset + 2] & 0xff) << 8) |
-    (hmac[offset + 3] & 0xff);
-  return (code % 1_000_000).toString().padStart(6, "0");
-}
-
-function totp(secret: string, timestamp = Date.now()) {
-  const step = 30;
-  const counter = Math.floor(timestamp / 1000 / step);
-  return hotp(secret, counter);
-}
-
-function verifyTotp(secret: string, token: string) {
-  const step = 30;
-  const counter = Math.floor(Date.now() / 1000 / step);
-  const candidates = [counter - 1, counter, counter + 1].map((c) => hotp(secret, c));
-  return candidates.includes(token);
-}
-
-export function getEnrollment(userId: string) {
-  const existing = store.get(userId);
-  if (existing) return existing;
-  const record: TwoFactorRecord = {
-    secret: generateSecret(),
-    enabled: false,
-    recoveryCodes: generateRecoveryCodes(),
-    trustedUntil: {},
+  return {
+    secret,
+    backupCodes,
+    enrolledAt: new Date().toISOString(),
   };
-  store.set(userId, record);
-  return record;
 }
 
-export function enableTwoFactor(userId: string, code: string) {
-  const record = getEnrollment(userId);
-  if (!verifyTotp(record.secret, code)) {
-    return { success: false, reason: "Invalid code" };
-  }
-  record.enabled = true;
-  record.recoveryCodes = generateRecoveryCodes();
-  record.trustedUntil = {};
-
-  recordActivity({
-    actorUserId: userId,
-    eventType: "security.twofactor_enabled",
-    metadata: {},
-  });
-  sendNotification({ userId, event: "security.twofactor_enabled" });
-  return { success: true, recoveryCodes: record.recoveryCodes };
+/**
+ * Store enrollment for a user
+ */
+export function storeEnrollment(userId: string, enrollment: TwoFactorEnrollment): void {
+  enrollments.set(userId, enrollment);
 }
 
-export function disableTwoFactor(userId: string) {
-  const record = getEnrollment(userId);
-  record.enabled = false;
-  recordActivity({
-    actorUserId: userId,
-    eventType: "security.twofactor_disabled",
-    metadata: {},
-  });
-  sendNotification({ userId, event: "security.twofactor_disabled" });
-  return true;
+/**
+ * Get enrollment for a user
+ */
+export function getEnrollment(userId: string): TwoFactorEnrollment | undefined {
+  return enrollments.get(userId);
 }
 
-export function verifySecondFactor(userId: string, code?: string, recoveryCode?: string) {
-  const record = getEnrollment(userId);
-  if (!record.enabled) return { ok: true, usedRecovery: false };
-
-  if (code && verifyTotp(record.secret, code)) {
-    recordActivity({
-      actorUserId: userId,
-      eventType: "security.twofactor_success",
-      metadata: {},
-    });
-    return { ok: true, usedRecovery: false };
-  }
-
-  if (recoveryCode) {
-    const idx = record.recoveryCodes.indexOf(recoveryCode);
-    if (idx >= 0) {
-      record.recoveryCodes.splice(idx, 1);
-      recordActivity({
-        actorUserId: userId,
-        eventType: "security.twofactor_recovery_used",
-        metadata: {},
-      });
-      return { ok: true, usedRecovery: true };
+/**
+ * Verify a TOTP code
+ */
+export async function verifyTOTPCode(
+  secret: string,
+  code: string
+): Promise<boolean> {
+  const { createHmac } = await import("crypto");
+  
+  // Convert base64 secret to buffer
+  const secretBuffer = Buffer.from(secret, "base64");
+  
+  // TOTP window: current time and ±1 time period (30 seconds each)
+  const timeStep = 30000; // 30 seconds
+  const now = Date.now();
+  
+  for (let i = -1; i <= 1; i++) {
+    const time = Math.floor((now + i * timeStep) / timeStep);
+    const timeBuffer = Buffer.alloc(8);
+    
+    // Write time as big-endian 64-bit integer
+    for (let j = 0; j < 8; j++) {
+      timeBuffer[7 - j] = time & 0xff;
+      time = time >> 8;
+    }
+    
+    // Generate HMAC-SHA1
+    const hmac = createHmac("sha1", secretBuffer);
+    hmac.update(timeBuffer);
+    const digest = hmac.digest();
+    
+    // Extract dynamic binary code
+    const offset = digest[digest.length - 1] & 0x0f;
+    const bin_code = ((digest[offset] & 0x7f) << 24)
+      | ((digest[offset + 1] & 0xff) << 16)
+      | ((digest[offset + 2] & 0xff) << 8)
+      | (digest[offset + 3] & 0xff);
+    
+    // Generate 6-digit code
+    const otp = (bin_code % 1000000).toString().padStart(6, "0");
+    
+    if (otp === code) {
+      return true;
     }
   }
-
-  recordActivity({
-    actorUserId: userId,
-    eventType: "security.twofactor_failed",
-    metadata: {},
-  });
-  return { ok: false, usedRecovery: false };
-}
-
-export function requiresTwoFactor(role: Role) {
-  const policy = getOnboardingState();
-  if (!policy.require2FAForAdmins) return false;
-  return role === Role.OWNER || role === Role.FINANCE_ADMIN;
-}
-
-export function getTotpCodeForTesting(userId: string) {
-  const record = getEnrollment(userId);
-  return totp(record.secret);
+  
+  return false;
 }
