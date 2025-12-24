@@ -178,9 +178,9 @@ export default function Home() {
           </div>
         </section>
 
-         <section id="features" className="mt-14 space-y-6">
-           <div className="flex items-center justify-between">
-             <div>
+        <section id="features" className="mt-14 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
               <p className="text-sm uppercase tracking-[0.15em] text-muted">Platform depth</p>
               <h2 className="font-display text-3xl font-semibold">Everything under one steady roof</h2>
             </div>
