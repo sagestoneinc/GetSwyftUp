@@ -24,8 +24,15 @@ function Logo() {
 }
 
 function DesktopDropdown({ group, isOpen, setOpen }: { group: NavGroup; isOpen: boolean; setOpen: (key: string | null) => void }) {
+  const toggleOpen = () => setOpen(isOpen ? null : group.label);
+
   const handleBlur = (event: React.FocusEvent<HTMLDivElement>) => {
     const related = event.relatedTarget as Node | null;
+    if (!related) {
+      // relatedTarget can be null when focus leaves the document; close the dropdown in that case.
+      setOpen(null);
+      return;
+    }
     if (!event.currentTarget.contains(related)) {
       setOpen(null);
     }
@@ -55,7 +62,16 @@ function DesktopDropdown({ group, isOpen, setOpen }: { group: NavGroup; isOpen: 
           "flex items-center gap-1 rounded-[var(--radius-pill)] px-3 py-2 text-sm font-semibold text-muted transition hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
           isOpen && "text-text",
         )}
-        onClick={() => setOpen(isOpen ? null : group.label)}
+        onMouseDown={(event) => {
+          event.preventDefault();
+          toggleOpen();
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleOpen();
+          }
+        }}
       >
         {group.label}
         <span aria-hidden className={cn("text-xs transition", isOpen ? "rotate-180" : "rotate-0")}>

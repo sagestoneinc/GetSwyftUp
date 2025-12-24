@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { MarketingLayout } from "@/components/marketing/marketing-layout";
+import { cn } from "@/lib/utils";
 
 const AUTH_PATH = "/auth/sign-in";
 
@@ -62,6 +63,13 @@ const trust = [
 ];
 
 const proof = ["ARCHWAY", "LUMENFI", "PARALLAX", "NORTHSTAR", "CIRCUIT", "ALTAIR"];
+
+const forexRates = [
+  { pair: "USD → EUR", rate: "0.93", change: "+0.12%", trend: "up" },
+  { pair: "USD → GBP", rate: "0.78", change: "-0.05%", trend: "down" },
+  { pair: "USD → INR", rate: "83.10", change: "+0.22%", trend: "up" },
+  { pair: "USD → NGN", rate: "1512.00", change: "+0.64%", trend: "up" },
+];
 
 export default function Home() {
   return (
@@ -132,6 +140,41 @@ export default function Home() {
                 </span>
               ))}
             </div>
+          </div>
+        </section>
+
+        <section className="mt-14 rounded-[var(--radius-card)] border border-white/5 bg-white/5 px-6 py-8 shadow-[var(--shadow-soft)]">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.15em] text-muted">Market pulse</p>
+              <h2 className="font-display text-3xl font-semibold">Current forex rates</h2>
+              <p className="text-muted">
+                Popular transfer corridors refreshed to mirror real mid-market rates - demo figures for illustration, just like you see on Wise.
+              </p>
+            </div>
+            <Badge tone="subtle">Updated just now</Badge>
+          </div>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {forexRates.map((item) => (
+              <Card key={item.pair} className="bg-panel/70">
+                <CardHeader className="space-y-1">
+                  <p className="text-sm text-muted">{item.pair}</p>
+                  <p className="text-2xl font-semibold">{item.rate}</p>
+                </CardHeader>
+                <CardContent>
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-[var(--radius-pill)] px-3 py-1 text-xs font-semibold",
+                      item.trend === "up"
+                        ? "bg-[var(--accent)]/15 text-[var(--accent)]"
+                        : "bg-[var(--brand-2)]/15 text-[var(--brand-2)]",
+                    )}
+                  >
+                    {item.trend === "up" ? "↑" : "↓"} {item.change}
+                  </span>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </section>
 
