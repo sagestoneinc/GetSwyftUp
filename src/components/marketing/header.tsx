@@ -65,7 +65,12 @@ function DesktopDropdown({ group, isOpen, setOpen }: { group: NavGroup; isOpen: 
           event.preventDefault();
           toggleOpen();
         }}
-        onClick={toggleOpen}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleOpen();
+          }
+        }}
       >
         {group.label}
         <span aria-hidden className={cn("text-xs transition", isOpen ? "rotate-180" : "rotate-0")}>
