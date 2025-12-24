@@ -39,7 +39,7 @@ function DesktopDropdown({ group, isOpen, setOpen }: { group: NavGroup; isOpen: 
 
   const handleMouseLeave = (event: React.MouseEvent<HTMLDivElement>) => {
     const related = event.relatedTarget as Node | null;
-    if (related instanceof Node && event.currentTarget.contains(related)) {
+    if (related && event.currentTarget.contains(related)) {
       return;
     }
     setOpen(null);
