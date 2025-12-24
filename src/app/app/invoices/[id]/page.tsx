@@ -43,12 +43,12 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
             <p className="text-sm text-muted">Actions</p>
           </CardHeader>
           <CardContent className="space-y-3">
-            <form action={async () => approveInvoiceAction(invoice.id)}>
+            <form action={async (_formData) => { await approveInvoiceAction(invoice.id); }}>
               <Button className="w-full" type="submit" disabled={invoice.status === "approved" || invoice.status === "paid"}>
                 Approve invoice
               </Button>
             </form>
-            <form action={async () => payInvoiceAction(invoice.id)}>
+            <form action={async (_formData) => { await payInvoiceAction(invoice.id); }}>
               <Button className="w-full" type="submit" disabled={invoice.status === "paid"}>
                 Pay invoice (sandbox)
               </Button>
