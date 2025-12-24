@@ -17,7 +17,17 @@ export default function SignUpPage() {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setMessage(null);
-    const normalizedInvite = inviteToken.trim();
+    const isSafeRedirect = (url: string | null) => {
+      if (!url) return false;
+      try {
+        const parsed = new URL(url, window.location.origin);
+        return parsed.origin === window.location.origin;
+      } catch {
+        return url.startsWith("/") && !url.startsWith("//");
+      }
+    };
+
+    const normalizedInvite = inviteToken?.trim() ?? "";
     let journeyTarget = "/onboarding/company/org";
     if (accountType === "contractor") {
       if (!normalizedInvite) {
@@ -37,7 +47,8 @@ export default function SignUpPage() {
       return;
     }
     setMessage("Workspace created. Redirecting to your next step…");
-    window.location.href = res?.url || journeyTarget;
+    const target = isSafeRedirect(res?.url ?? null) ? res?.url! : journeyTarget;
+    window.location.href = target;
   };
 
   return (

@@ -18,7 +18,18 @@ export default function SignInPage() {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
-    const callbackUrl = searchParams.get("callbackUrl") ?? searchParams.get("redirectTo") ?? "/dashboard";
+    const isSafeRedirect = (url: string | null) => {
+      if (!url) return false;
+      try {
+        const parsed = new URL(url, window.location.origin);
+        return parsed.origin === window.location.origin;
+      } catch {
+        return url.startsWith("/") && !url.startsWith("//");
+      }
+    };
+
+    const rawCallback = searchParams.get("callbackUrl") ?? searchParams.get("redirectTo");
+    const callbackUrl = isSafeRedirect(rawCallback) ? rawCallback! : "/dashboard";
     const res = await signIn("credentials", {
       redirect: false,
       email,
@@ -29,7 +40,8 @@ export default function SignInPage() {
     if (res?.error) {
       setError(res.error === "MFA_REQUIRED" ? "A valid 2FA code is required to continue." : "Invalid credentials");
     } else {
-      window.location.href = res?.url || callbackUrl;
+      const target = isSafeRedirect(res?.url ?? null) ? res?.url! : callbackUrl;
+      window.location.href = target;
     }
   };
 
