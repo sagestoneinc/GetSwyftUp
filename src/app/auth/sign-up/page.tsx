@@ -37,7 +37,7 @@ export default function SignUpPage() {
       return;
     }
     setMessage("Workspace created. Redirecting to your next step…");
-    window.location.href = res?.url ?? journeyTarget;
+    window.location.href = res?.url || journeyTarget;
   };
 
   return (

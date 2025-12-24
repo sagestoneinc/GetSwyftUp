@@ -29,7 +29,7 @@ export default function SignInPage() {
     if (res?.error) {
       setError(res.error === "MFA_REQUIRED" ? "A valid 2FA code is required to continue." : "Invalid credentials");
     } else {
-      window.location.href = res?.url ?? callbackUrl;
+      window.location.href = res?.url || callbackUrl;
     }
   };
 
