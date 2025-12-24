@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { generateTwoFactorSecret, storeEnrollment, getEnrollment } from "@/lib/twofactor";
 import { removeEnrollment } from "@/lib/twofactor";
 
+export const runtime = "nodejs";
+
 /**
  * GET /api/auth/twofactor
  * Initiate 2FA enrollment and return TOTP secret
