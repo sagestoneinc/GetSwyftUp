@@ -82,8 +82,13 @@ export function removeEnrollment(userId: string): void {
   enrollments.delete(userId);
 }
 
+/**
+ * Normalize a Uint8Array view into a standalone ArrayBuffer for Web Crypto APIs.
+ */
 function toArrayBuffer(view: Uint8Array): ArrayBuffer {
-  return view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength) as ArrayBuffer;
+  const buffer = new ArrayBuffer(view.byteLength);
+  new Uint8Array(buffer).set(view);
+  return buffer;
 }
 
 async function hmacSha1(keyBytes: Uint8Array, data: Uint8Array): Promise<Uint8Array> {
