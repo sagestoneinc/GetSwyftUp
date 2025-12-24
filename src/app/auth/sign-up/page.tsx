@@ -6,6 +6,7 @@ import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { isSafeRedirect } from "@/lib/safe-redirect";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -17,22 +18,28 @@ export default function SignUpPage() {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setMessage(null);
-    if (accountType === "contractor" && !inviteToken) {
-      setMessage("Contractor sign-up requires a valid invite token.");
-      return;
+    const trimmedInviteToken = inviteToken?.trim() ?? "";
+    let journeyTarget = "/onboarding/company/org";
+    if (accountType === "contractor") {
+      if (!trimmedInviteToken) {
+        setMessage("Contractor sign-up requires a valid invite token.");
+        return;
+      }
+      journeyTarget = `/invite/${encodeURIComponent(trimmedInviteToken)}`;
     }
     const res = await signIn("credentials", {
       redirect: false,
       email,
       password,
-      callbackUrl: "/app",
+      callbackUrl: journeyTarget,
     });
     if (res?.error) {
       setMessage("Invalid credentials. Please confirm your access details.");
       return;
     }
-    setMessage("Workspace created. Redirecting…");
-    window.location.href = "/app";
+    setMessage("Workspace created. Redirecting to your next step…");
+    const target = res?.url && isSafeRedirect(res.url) ? res.url : journeyTarget;
+    window.location.href = target;
   };
 
   return (

@@ -1,13 +1,16 @@
 'use client';
 
 import { useState, FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { isSafeRedirect } from "@/lib/safe-redirect";
 
 export default function SignInPage() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
@@ -16,17 +19,21 @@ export default function SignInPage() {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    // Support both current (callbackUrl) and legacy (redirectTo) param names.
+    const rawCallback = searchParams.get("callbackUrl") ?? searchParams.get("redirectTo");
+    const callbackUrl = rawCallback && isSafeRedirect(rawCallback) ? rawCallback : "/dashboard";
     const res = await signIn("credentials", {
       redirect: false,
       email,
       password,
       otp,
-      callbackUrl: "/dashboard",
+      callbackUrl,
     });
     if (res?.error) {
       setError(res.error === "MFA_REQUIRED" ? "A valid 2FA code is required to continue." : "Invalid credentials");
     } else {
-      window.location.href = "/dashboard";
+      const target = res?.url && isSafeRedirect(res.url) ? res.url : callbackUrl;
+      window.location.href = target;
     }
   };
 
