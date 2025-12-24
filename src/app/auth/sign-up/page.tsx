@@ -17,22 +17,24 @@ export default function SignUpPage() {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setMessage(null);
-    if (accountType === "contractor" && !inviteToken) {
+    const normalizedInvite = inviteToken.trim();
+    if (accountType === "contractor" && !normalizedInvite) {
       setMessage("Contractor sign-up requires a valid invite token.");
       return;
     }
+    const journeyTarget = accountType === "contractor" ? `/invite/${encodeURIComponent(normalizedInvite)}` : "/onboarding/company/org";
     const res = await signIn("credentials", {
       redirect: false,
       email,
       password,
-      callbackUrl: "/app",
+      callbackUrl: journeyTarget,
     });
     if (res?.error) {
       setMessage("Invalid credentials. Please confirm your access details.");
       return;
     }
-    setMessage("Workspace created. Redirecting…");
-    window.location.href = "/app";
+    setMessage("Workspace created. Redirecting to your next step…");
+    window.location.href = res?.url ?? journeyTarget;
   };
 
   return (
