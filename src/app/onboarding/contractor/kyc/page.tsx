@@ -21,12 +21,12 @@ export default function ContractorKycPage() {
           <form className="space-y-3" action={async () => updateKycStatusAction(contractor.id, "approved") }>
             <div className="grid gap-3 md:grid-cols-2">
               <Input name="legalName" placeholder="Legal name" required />
-              <Input name="idNumber" placeholder="ID number" required />
+              <Input name="idNumber" placeholder="ID number (mock)" required />
               <Input name="country" placeholder="Country" required />
               <Input name="city" placeholder="City" required />
             </div>
             <div className="flex gap-3">
-              <Button type="submit">Submit & Approve</Button>
+              <Button type="submit">Submit & Approve (Mock)</Button>
               <Button type="button" variant="ghost" onClick={async () => updateKycStatusAction(contractor.id, "rejected")}>Mark Rejected</Button>
             </div>
           </form>
