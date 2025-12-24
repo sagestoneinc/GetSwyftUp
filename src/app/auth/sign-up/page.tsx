@@ -18,14 +18,14 @@ export default function SignUpPage() {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setMessage(null);
-    const normalizedInvite = inviteToken?.trim() ?? "";
+    const trimmedInviteToken = inviteToken?.trim() ?? "";
     let journeyTarget = "/onboarding/company/org";
     if (accountType === "contractor") {
-      if (!normalizedInvite) {
+      if (!trimmedInviteToken) {
         setMessage("Contractor sign-up requires a valid invite token.");
         return;
       }
-      journeyTarget = `/invite/${encodeURIComponent(normalizedInvite)}`;
+      journeyTarget = `/invite/${encodeURIComponent(trimmedInviteToken)}`;
     }
     const res = await signIn("credentials", {
       redirect: false,

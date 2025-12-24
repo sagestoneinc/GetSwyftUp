@@ -19,6 +19,7 @@ export default function SignInPage() {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    // Support both current (callbackUrl) and legacy (redirectTo) param names.
     const rawCallback = searchParams.get("callbackUrl") ?? searchParams.get("redirectTo");
     const callbackUrl = rawCallback && isSafeRedirect(rawCallback) ? rawCallback : "/dashboard";
     const res = await signIn("credentials", {
