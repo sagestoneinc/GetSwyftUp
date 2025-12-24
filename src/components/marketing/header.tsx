@@ -29,6 +29,7 @@ function DesktopDropdown({ group, isOpen, setOpen }: { group: NavGroup; isOpen: 
   const handleBlur = (event: React.FocusEvent<HTMLDivElement>) => {
     const related = event.relatedTarget as Node | null;
     if (!related) {
+      // relatedTarget can be null when focus leaves the document; close the dropdown in that case.
       setOpen(null);
       return;
     }
