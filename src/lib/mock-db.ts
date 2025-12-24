@@ -12,7 +12,7 @@ import {
 import { sendNotification } from "@/lib/notification-service";
 
 export type Role = "SUPER_ADMIN" | "OWNER" | "ADMIN" | "FINANCE" | "CONTRACTOR";
-export type ContractorStatus = "invited" | "onboarding" | "active";
+export type ContractorStatus = "invited" | "onboarding" | "active" | "inactive";
 export type InvoiceStatus = "draft" | "submitted" | "approved" | "scheduled" | "paid" | "failed";
 export type PayoutStatus = "pending" | "approved" | "paid" | "failed";
 export type CardStatus = "active" | "frozen" | "closed";
@@ -41,6 +41,10 @@ export type Contractor = {
   payoutMethod: string;
   documents: { kyc: string; tax: string };
   walletId: string;
+  contractActive: boolean;
+  hourlyRate?: number;
+  wage?: number;
+  wageCurrency?: string;
 };
 
 export type Invoice = {
@@ -218,6 +222,9 @@ const orgName = process.env.ORG_NAME ?? "SwyftUp";
 const orgCurrency = process.env.ORG_CURRENCY ?? "USD";
 const ownerEmail = process.env.AUTH_EMAIL ?? "owner@example.com";
 const superAdminEmail = process.env.SUPER_ADMIN_EMAIL;
+const FX_CROSS_RATE = 0.98;
+const FX_FEE_BPS = 0.005;
+const FX_FEE_MIN = 1;
 
 const seedData: MockDatabase = {
   org: { id: "org_swyftup", name: orgName, currency: orgCurrency },
@@ -300,6 +307,15 @@ function addLedger(
   }
 }
 
+function resolveContractStatus(
+  currentStatus: ContractorStatus,
+  contractActive: boolean,
+  kycStatus: string,
+): ContractorStatus {
+  if (kycStatus !== "approved") return currentStatus;
+  return contractActive ? "active" : "inactive";
+}
+
 export function getDb(): MockDatabase {
   return db;
 }
@@ -337,6 +353,8 @@ export const inviteContractorAction = async (formData: FormData) => {
     payoutMethod: "Not provided",
     documents: { kyc: "pending", tax: "pending" },
     walletId: `w_${randomShort(6)}`,
+    contractActive: true,
+    wageCurrency: orgCurrency,
   };
 
   db.contractors.unshift(contractor);
@@ -410,6 +428,75 @@ export const approveInvoiceAction = async (invoiceId: string) => {
   sendNotification({ userId: "user_owner", event: "invoice.approved", metadata: { invoiceId } });
   revalidatePath("/app/invoices");
   revalidatePath(`/app/invoices/${invoiceId}`);
+};
+
+export const payInvoiceAction = async (invoiceId: string) => {
+  "use server";
+  const invoice = db.invoices.find((i) => i.id === invoiceId);
+  if (!invoice) throw new Error("Invoice not found");
+  if (invoice.status === "paid") return { status: "already_paid", invoiceId };
+
+  invoice.status = "paid";
+  invoice.timeline.push({ label: "Paid", at: new Date().toISOString() });
+
+  const orgWallet = db.wallets.find((w) => w.ownerType === "ORG");
+  const contractorWallet = db.wallets.find((w) => w.ownerId === invoice.contractorId);
+  const providerRef = orgWallet && contractorWallet ? `pay_${randomShort(6)}` : undefined;
+  const memo = "Invoice paid";
+
+  if (orgWallet) {
+    addLedger(orgWallet.id, "DEBIT", invoice.amount, "invoice_payment", invoice.id, memo, orgWallet.currency);
+  }
+  if (contractorWallet) {
+    addLedger(
+      contractorWallet.id,
+      "CREDIT",
+      invoice.amount,
+      "invoice_payment",
+      invoice.id,
+      memo,
+      contractorWallet.currency,
+    );
+  }
+
+  if (orgWallet && contractorWallet && providerRef) {
+    const sameCurrency = orgWallet.currency === contractorWallet.currency;
+    const fxRate = sameCurrency ? 1 : FX_CROSS_RATE;
+    const fxFee = sameCurrency ? 0 : Math.max(FX_FEE_MIN, invoice.amount * FX_FEE_BPS);
+
+    db.payouts.unshift({
+      id: providerRef,
+      orgId: db.org.id,
+      contractorId: invoice.contractorId,
+      invoiceId: invoice.id,
+      amount: invoice.amount,
+      sourceCurrency: orgWallet.currency,
+      destinationCurrency: contractorWallet.currency,
+      fxRate,
+      fxFee,
+      provider: "WISE",
+      status: "paid",
+      providerRef,
+      estimatedArrival: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+    });
+
+    sendNotification({
+      userId: "user_owner",
+      event: "payout.completed",
+      metadata: { invoiceId: invoice.id, payoutId: providerRef },
+    });
+  }
+
+  pushAudit("user_owner", "pay_invoice", {
+    invoiceId: invoice.id,
+    contractorId: invoice.contractorId,
+    payoutRecorded: Boolean(providerRef),
+  });
+  revalidatePath("/app/invoices");
+  revalidatePath(`/app/invoices/${invoiceId}`);
+  revalidatePath("/app/wallet");
+  revalidatePath("/app/cards");
 };
 
 export const fundWalletAction = async (amount: number) => {
@@ -702,10 +789,55 @@ export const updateKycStatusAction = async (contractorId: string, status: "appro
   const contractor = db.contractors.find((c) => c.id === contractorId);
   if (!contractor) throw new Error("Contractor not found");
   contractor.documents.kyc = status;
-  contractor.status = status === "approved" ? "active" : contractor.status;
+  contractor.status = resolveContractStatus(contractor.status, contractor.contractActive, status);
   pushAudit("user_owner", "kyc_status_updated", { contractorId, status });
   revalidatePath(`/app/contractors/${contractorId}`);
   revalidatePath("/onboarding/contractor/card");
+};
+
+const optionalMoney = z
+  .preprocess((value) => (value === "" || value === null ? undefined : value), z.coerce.number().nonnegative())
+  .optional();
+
+export const updateContractorContractAction = async (formData: FormData) => {
+  "use server";
+  const parsed = z
+    .object({
+      contractorId: z.string().min(1),
+      contractActive: z.coerce.boolean(),
+      hourlyRate: optionalMoney,
+      wage: optionalMoney,
+      wageCurrency: z.enum(["USD", "EUR", "GBP"]).optional(),
+    })
+    .safeParse({
+      contractorId: formData.get("contractorId"),
+      contractActive: formData.get("contractActive"),
+      hourlyRate: formData.get("hourlyRate"),
+      wage: formData.get("wage"),
+      wageCurrency: formData.get("wageCurrency"),
+    });
+
+  if (!parsed.success) throw new Error("Invalid contract update");
+
+  const contractor = db.contractors.find((c) => c.id === parsed.data.contractorId);
+  if (!contractor) throw new Error("Contractor not found");
+
+  contractor.contractActive = parsed.data.contractActive;
+  contractor.status = resolveContractStatus(contractor.status, parsed.data.contractActive, contractor.documents.kyc);
+  if (parsed.data.hourlyRate !== undefined) contractor.hourlyRate = parsed.data.hourlyRate;
+  if (parsed.data.wage !== undefined) contractor.wage = parsed.data.wage;
+  if (parsed.data.wageCurrency) contractor.wageCurrency = parsed.data.wageCurrency;
+
+  pushAudit("user_owner", "update_contractor_contract", {
+    contractorId: contractor.id,
+    active: contractor.contractActive,
+    hourlyRate: contractor.hourlyRate,
+    wage: contractor.wage,
+    currency: contractor.wageCurrency,
+  });
+
+  revalidatePath(`/app/contractors/${contractor.id}`);
+  revalidatePath("/app/contractors");
 };
 
 export const previewWiseQuoteAction = async (formData: FormData) => {

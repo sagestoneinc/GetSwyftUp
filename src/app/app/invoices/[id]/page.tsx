@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { approveInvoiceAction, getDb } from "@/lib/mock-db";
+import { approveInvoiceAction, getDb, payInvoiceAction } from "@/lib/mock-db";
 import { formatCurrency } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,11 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
             <form action={async () => approveInvoiceAction(invoice.id)}>
               <Button className="w-full" type="submit" disabled={invoice.status === "approved" || invoice.status === "paid"}>
                 Approve invoice
+              </Button>
+            </form>
+            <form action={async () => payInvoiceAction(invoice.id)}>
+              <Button className="w-full" type="submit" disabled={invoice.status === "paid"}>
+                Pay invoice (sandbox)
               </Button>
             </form>
             <Button variant="secondary" className="w-full" type="button">

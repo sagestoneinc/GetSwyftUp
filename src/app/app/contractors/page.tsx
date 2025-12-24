@@ -31,6 +31,7 @@ export default function ContractorsPage({ searchParams }: { searchParams: Record
           <option value="invited">Invited</option>
           <option value="onboarding">Onboarding</option>
           <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
         </Select>
         <Button type="submit">Filter</Button>
       </form>

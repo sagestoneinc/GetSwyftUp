@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getDb } from "@/lib/mock-db";
 import { formatCurrency } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input, Select } from "@/components/ui/input";
 import { StatusBadge } from "@/components/status-badge";
+import { getDb, updateContractorContractAction } from "@/lib/mock-db";
 
 export default function ContractorDetailPage({ params }: { params: { id: string } }) {
   const db = getDb();
@@ -12,6 +14,7 @@ export default function ContractorDetailPage({ params }: { params: { id: string 
   if (!contractor) return notFound();
   const wallet = db.wallets.find((w) => w.id === contractor.walletId);
   const invoices = db.invoices.filter((inv) => inv.contractorId === contractor.id);
+  const defaultCurrency = contractor.wageCurrency ?? db.org.currency ?? "USD";
 
   return (
     <div className="space-y-4">
@@ -50,9 +53,50 @@ export default function ContractorDetailPage({ params }: { params: { id: string 
             <p className="text-sm text-muted">Status</p>
             <StatusBadge status={contractor.status} />
           </CardHeader>
-          <CardContent className="space-y-2 text-sm text-muted">
-            <p>Invite email sent to {contractor.email}</p>
-            <p>Org: SwyftUp Capital</p>
+          <CardContent className="space-y-3 text-sm text-muted">
+            <div className="space-y-1">
+              <p>Invite email sent to {contractor.email}</p>
+              <p>Org: SwyftUp Capital</p>
+              <p>Contract: {contractor.contractActive ? "Active" : "Inactive"}</p>
+              {contractor.hourlyRate !== undefined && (
+                <p>
+                  Hourly rate: {formatCurrency(contractor.hourlyRate, defaultCurrency)} / hr
+                </p>
+              )}
+              {contractor.wage !== undefined && (
+                <p>Pay wage: {formatCurrency(contractor.wage, defaultCurrency)}</p>
+              )}
+            </div>
+
+            <form action={updateContractorContractAction} className="grid gap-2 text-text md:grid-cols-2">
+              <input type="hidden" name="contractorId" value={contractor.id} />
+              <Select name="contractActive" defaultValue={contractor.contractActive ? "true" : "false"} required>
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+              </Select>
+              <Select name="wageCurrency" defaultValue={defaultCurrency}>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+              </Select>
+              <Input
+                name="hourlyRate"
+                type="number"
+                step="0.01"
+                placeholder="Hourly rate"
+                defaultValue={contractor.hourlyRate ?? ""}
+              />
+              <Input
+                name="wage"
+                type="number"
+                step="0.01"
+                placeholder="Contractor wage"
+                defaultValue={contractor.wage ?? ""}
+              />
+              <Button type="submit" size="sm" className="md:col-span-2">
+                Update contract
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </div>
