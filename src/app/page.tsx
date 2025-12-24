@@ -148,9 +148,9 @@ export default function Home() {
              <div>
                <p className="text-sm uppercase tracking-[0.15em] text-muted">Market pulse</p>
                <h2 className="font-display text-3xl font-semibold">Current forex rates</h2>
-               <p className="text-muted">
-                 Popular transfer corridors refreshed to mirror real mid-market rates—just like you see on Wise.
-               </p>
+              <p className="text-muted">
+                Popular transfer corridors refreshed to mirror real mid-market rates—demo figures for illustration, just like you see on Wise.
+              </p>
              </div>
              <Badge tone="subtle">Updated just now</Badge>
            </div>

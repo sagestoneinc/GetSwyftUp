@@ -24,6 +24,8 @@ function Logo() {
 }
 
 function DesktopDropdown({ group, isOpen, setOpen }: { group: NavGroup; isOpen: boolean; setOpen: (key: string | null) => void }) {
+  const toggleOpen = () => setOpen(isOpen ? null : group.label);
+
   const handleBlur = (event: React.FocusEvent<HTMLDivElement>) => {
     const related = event.relatedTarget as Node | null;
     if (!related || !(related instanceof Node) || !event.currentTarget.contains(related)) {
@@ -57,9 +59,9 @@ function DesktopDropdown({ group, isOpen, setOpen }: { group: NavGroup; isOpen: 
         )}
         onMouseDown={(event) => {
           event.preventDefault();
-          setOpen(isOpen ? null : group.label);
+          toggleOpen();
         }}
-        onClick={() => setOpen(isOpen ? null : group.label)}
+        onClick={toggleOpen}
       >
         {group.label}
         <span aria-hidden className={cn("text-xs transition", isOpen ? "rotate-180" : "rotate-0")}>
