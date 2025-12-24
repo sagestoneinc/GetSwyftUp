@@ -26,14 +26,14 @@ function Logo() {
 function DesktopDropdown({ group, isOpen, setOpen }: { group: NavGroup; isOpen: boolean; setOpen: (key: string | null) => void }) {
   const handleBlur = (event: React.FocusEvent<HTMLDivElement>) => {
     const related = event.relatedTarget as Node | null;
-    if (!event.currentTarget.contains(related)) {
+    if (!related || !(related instanceof Node) || !event.currentTarget.contains(related)) {
       setOpen(null);
     }
   };
 
   const handleMouseLeave = (event: React.MouseEvent<HTMLDivElement>) => {
     const related = event.relatedTarget as Node | null;
-    if (related && event.currentTarget.contains(related)) {
+    if (related instanceof Node && event.currentTarget.contains(related)) {
       return;
     }
     setOpen(null);
@@ -55,6 +55,10 @@ function DesktopDropdown({ group, isOpen, setOpen }: { group: NavGroup; isOpen: 
           "flex items-center gap-1 rounded-[var(--radius-pill)] px-3 py-2 text-sm font-semibold text-muted transition hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-black/40",
           isOpen && "text-text",
         )}
+        onMouseDown={(event) => {
+          event.preventDefault();
+          setOpen(isOpen ? null : group.label);
+        }}
         onClick={() => setOpen(isOpen ? null : group.label)}
       >
         {group.label}
