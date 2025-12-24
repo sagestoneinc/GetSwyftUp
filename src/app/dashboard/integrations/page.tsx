@@ -15,7 +15,7 @@ export default function IntegrationsPage() {
       status: wiseConfigured
         ? { label: "Ready", tone: "success" as const }
         : { label: "Add WISE_API_KEY", tone: "warning" as const },
-      description: "Contractor payouts and FX previews run through Wise mocks.",
+      description: "Contractor payouts and FX previews run through the Wise sandbox.",
       actionLabel: "View payouts",
       href: "/dashboard/payouts",
       meta: wiseConfigured ? "Sandbox token detected for payouts/FX." : "Add your sandbox API key to enable calls.",
@@ -40,7 +40,7 @@ export default function IntegrationsPage() {
       description: "Virtual cards are issued from the Marqeta sandbox; swap keys to talk to your provider.",
       actionLabel: "Manage cards",
       href: "/dashboard/cards",
-      meta: marqetaConfigured ? "Marqeta sandbox key detected." : "Cards run in mock mode until issuer keys are set.",
+      meta: marqetaConfigured ? "Marqeta sandbox key detected." : "Cards stay in sandbox mode until issuer keys are set.",
     },
   ] as const;
 
