@@ -9,8 +9,8 @@ export default function CompanySetupPage() {
   const checklist = [
     { label: "Invite contractor", href: "/app/contractors" },
     { label: "Invite team member", href: "/app/settings" },
-    { label: "Add funding method (mock)", href: "/app/wallet" },
-    { label: "Verify business (mock)", href: "/app/settings" },
+    { label: "Add funding method", href: "/app/wallet" },
+    { label: "Verify business details", href: "/app/settings" },
   ];
 
   return (

@@ -43,7 +43,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             <p className="text-3xl font-semibold">{formatCurrency(pendingPayouts)}</p>
-            <p className="text-sm text-muted">Queued for release via mock provider</p>
+            <p className="text-sm text-muted">Queued for release with your payout provider</p>
           </CardContent>
         </Card>
       </div>

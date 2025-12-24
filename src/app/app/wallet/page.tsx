@@ -39,7 +39,7 @@ export default function WalletPage() {
               {formatCurrency(db.payouts.filter((p) => p.status === "pending").reduce((acc, p) => acc + p.amount, 0))}
             </p>
           </CardHeader>
-          <CardContent className="text-sm text-muted">Run the mock cron to settle.</CardContent>
+          <CardContent className="text-sm text-muted">Run the cron to settle pending payouts.</CardContent>
         </Card>
       </div>
 
@@ -47,7 +47,7 @@ export default function WalletPage() {
         <Card>
           <CardHeader>
             <p className="text-sm uppercase tracking-[0.2em] text-muted">Fund wallet</p>
-            <p className="text-sm text-muted">Mock funding provider credits org wallet</p>
+            <p className="text-sm text-muted">Manual funding credits the org wallet</p>
           </CardHeader>
           <CardContent>
             <form

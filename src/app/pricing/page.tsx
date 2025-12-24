@@ -17,9 +17,10 @@ export const metadata: Metadata = {
 const plans = [
   {
     name: "Starter",
-    price: "Starting at $0/mo",
-    blurb: "For small teams paying a few contractors.",
+    price: "Company license + $8/user",
+    blurb: "Per-company license with light usage included for small teams.",
     features: [
+      "Includes 5 active users",
       "Up to 10 contractors",
       "Invoice collection & approvals",
       "Basic payout tracking",
@@ -29,9 +30,10 @@ const plans = [
   },
   {
     name: "Growth",
-    price: "Starting at $79/mo",
-    blurb: "For scaling teams with approvals.",
+    price: "Company license + $12/user",
+    blurb: "Seat-based billing for teams that need multi-level approvals.",
     features: [
+      "Includes 15 active users",
       "Unlimited contractors",
       "Multi-level approvals",
       "FX visibility and payout insights",
@@ -42,8 +44,8 @@ const plans = [
   },
   {
     name: "Enterprise",
-    price: "Contact us",
-    blurb: "For advanced controls and procurement.",
+    price: "Custom company license & seats",
+    blurb: "Tailored licensing and per-user rates for larger orgs.",
     features: [
       "Custom roles & SSO",
       "Dedicated success manager",
@@ -82,8 +84,8 @@ export default function PricingPage() {
               Pricing that stays simple as you grow.
             </h1>
             <p className="text-lg text-muted sm:max-w-3xl">
-              Start small, scale up. Transparent tiers with the approvals, tracking, and audit trail you need. Pricing is
-              illustrative—contact us for finalized rates.
+              Billing is based on a company license plus active users, so each workspace scales with usage. Start small
+              and add seats as needed while keeping approvals, tracking, and audit trail included.
             </p>
           </div>
         </section>
@@ -136,9 +138,7 @@ export default function PricingPage() {
               </Card>
             ))}
           </div>
-          <p className="text-xs text-muted">
-            Rates and timelines are examples. TODO: Add live fee tables once finalized.
-          </p>
+          <p className="text-xs text-muted">Rates and timelines vary by corridor; talk with us for your specific mix.</p>
         </section>
 
         <section className="rounded-[var(--radius-card)] border border-[var(--accent)]/30 bg-[linear-gradient(135deg,rgba(92,100,255,0.15),rgba(54,213,255,0.08))] p-8 shadow-[var(--shadow-soft)]">

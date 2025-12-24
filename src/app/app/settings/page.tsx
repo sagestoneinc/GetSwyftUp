@@ -37,7 +37,7 @@ export default function SettingsPage() {
           <CardContent className="space-y-3">
             <Input value="whsec_live_key" readOnly />
             <Button variant="secondary">Rotate key</Button>
-            <p className="text-sm text-muted">Keys are mocked for now; integrate provider when ready.</p>
+            <p className="text-sm text-muted">Keys are stored server-side; integrate your provider when ready.</p>
           </CardContent>
         </Card>
       </div>
@@ -72,7 +72,7 @@ export default function SettingsPage() {
             </Select>
             <Input placeholder="Default currency" defaultValue="USD" />
             <Button>Save payout rail</Button>
-            <p className="text-sm text-muted">Mock provider configuration stored server-side.</p>
+            <p className="text-sm text-muted">Provider configuration stays server-side.</p>
           </CardContent>
         </Card>
       </div>

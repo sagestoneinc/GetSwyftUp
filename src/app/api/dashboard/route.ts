@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     action,
     status: "ok",
     auditLogged: true,
-    message: "Mock mutation recorded",
+    message: "Mutation recorded",
   };
 
   return NextResponse.json(success);
