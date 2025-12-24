@@ -60,6 +60,7 @@ npx prisma migrate dev --name init
 - [Architecture notes](docs/ARCHITECTURE_IMPLEMENTATION.md)
 - [Security posture](docs/SECURITY.md)
 - [User journeys](docs/USER_JOURNEYS.md)
+- [Sitemap and navigation](docs/SITEMAP.md)
 
 ## Deploy on Railway
 The included `railway.toml` is configured for Nixpacks with a health check at `/api/health`.
