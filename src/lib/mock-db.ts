@@ -430,9 +430,10 @@ export const payInvoiceAction = async (invoiceId: string) => {
   const orgWallet = db.wallets.find((w) => w.ownerType === "ORG");
   const contractorWallet = db.wallets.find((w) => w.ownerId === invoice.contractorId);
   const providerRef = `pay_${randomShort(6)}`;
+  const memo = "Invoice paid";
 
   if (orgWallet) {
-    addLedger(orgWallet.id, "DEBIT", invoice.amount, "invoice_payment", invoice.id, "Invoice paid", orgWallet.currency);
+    addLedger(orgWallet.id, "DEBIT", invoice.amount, "invoice_payment", invoice.id, memo, orgWallet.currency);
   }
   if (contractorWallet) {
     addLedger(
@@ -441,7 +442,7 @@ export const payInvoiceAction = async (invoiceId: string) => {
       invoice.amount,
       "invoice_payment",
       invoice.id,
-      "Invoice paid",
+      memo,
       contractorWallet.currency,
     );
   }
