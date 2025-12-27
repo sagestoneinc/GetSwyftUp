@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { navConfig } from "@/config/navConfig";
 
 export function MarketingFooter() {
@@ -7,15 +8,13 @@ export function MarketingFooter() {
       <div className="mx-auto max-w-6xl px-4 py-12 md:px-6">
         <div className="grid gap-8 md:grid-cols-5">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-[var(--radius-pill)] bg-white/5 px-3 py-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-card)] bg-[linear-gradient(135deg,var(--brand-1),var(--brand-2))] text-sm font-bold text-white shadow-[var(--shadow-elevated)]">
-                SU
-              </span>
-              <div>
-                <p className="font-display text-lg font-semibold">SwyftUp</p>
-                <p className="text-xs text-muted">Global contractor finance</p>
-              </div>
-            </div>
+            <Image
+              src="/seeto-realty-logo.svg"
+              alt="Seeto Realty"
+              width={140}
+              height={70}
+              className="h-auto w-[140px]"
+            />
             <p className="text-sm text-muted">{navConfig.footer.tagline}</p>
           </div>
           {navConfig.footer.columns.map((column) => (

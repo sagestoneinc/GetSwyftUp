@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -19,10 +20,14 @@ export function Sidebar({ items }: { items: NavItem[] }) {
   return (
     <aside className="flex h-screen w-full max-w-[250px] flex-col border-r border-white/5 bg-panel/80 px-4 py-6 backdrop-blur-xl">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="font-display text-xl font-semibold tracking-tight">SwyftUp</p>
-          <p className="text-xs text-muted">Contractor finance</p>
-        </div>
+        <Image
+          src="/seeto-realty-logo.svg"
+          alt="Seeto Realty"
+          width={120}
+          height={60}
+          className="h-auto w-[120px]"
+          priority
+        />
         <Badge tone="accent">Live</Badge>
       </div>
 

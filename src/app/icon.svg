@@ -1,0 +1,12 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Simplified house icon for favicon -->
+  <!-- Black top triangle -->
+  <path d="M 6 12 L 16 4 L 26 12 L 26 14 L 6 14 Z" fill="#2D3338"/>
+  <!-- Red bottom triangle -->
+  <path d="M 6 14 L 6 24 L 16 28 L 26 24 L 26 14 Z" fill="#B91C1C"/>
+  <!-- Window -->
+  <rect x="13" y="17" width="2" height="2" fill="white"/>
+  <rect x="16" y="17" width="2" height="2" fill="white"/>
+  <rect x="13" y="20" width="2" height="2" fill="white"/>
+  <rect x="16" y="20" width="2" height="2" fill="white"/>
+</svg>

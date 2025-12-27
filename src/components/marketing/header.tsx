@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { navConfig, NavGroup } from "@/config/navConfig";
 import { cn } from "@/lib/utils";
@@ -12,13 +13,14 @@ function Logo() {
       href={navConfig.brand.href}
       className="group inline-flex items-center gap-2 rounded-[var(--radius-pill)] px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
     >
-      <span className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-card)] bg-[linear-gradient(135deg,var(--brand-1),var(--brand-2))] text-base font-bold text-white shadow-[var(--shadow-elevated)] transition group-hover:scale-105">
-        SU
-      </span>
-      <div className="leading-tight">
-        <p className="font-display text-lg font-semibold tracking-tight">SwyftUp</p>
-        <p className="text-xs text-muted">Global contractor finance</p>
-      </div>
+      <Image
+        src="/seeto-realty-logo.svg"
+        alt="Seeto Realty"
+        width={150}
+        height={75}
+        className="h-auto w-[150px] transition group-hover:scale-105"
+        priority
+      />
     </Link>
   );
 }
