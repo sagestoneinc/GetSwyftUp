@@ -64,7 +64,14 @@ const trust = [
 
 const proof = ["ARCHWAY", "LUMENFI", "PARALLAX", "NORTHSTAR", "CIRCUIT", "ALTAIR"];
 
-const forexRates = [
+type TrendDirection = "up" | "down";
+
+const forexRates: Array<{
+  pair: string;
+  rate: string;
+  change: string;
+  trend: TrendDirection;
+}> = [
   { pair: "USD → EUR", rate: "0.93", change: "+0.12%", trend: "up" },
   { pair: "USD → GBP", rate: "0.78", change: "-0.05%", trend: "down" },
   { pair: "USD → INR", rate: "83.10", change: "+0.22%", trend: "up" },
@@ -152,7 +159,7 @@ export default function Home() {
                 Popular transfer corridors refreshed to mirror real mid-market rates - demo figures for illustration, just like you see on Wise.
               </p>
             </div>
-            <Badge tone="subtle">Updated just now</Badge>
+            <Badge tone="subtle">Demo data</Badge>
           </div>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {forexRates.map((item) => (
@@ -170,7 +177,12 @@ export default function Home() {
                         : "bg-[var(--brand-2)]/15 text-[var(--brand-2)]",
                     )}
                   >
-                    {item.trend === "up" ? "↑" : "↓"} {item.change}
+                    <span aria-hidden="true">
+                      {item.trend === "up" ? "↑" : "↓"} {item.change}
+                    </span>
+                    <span className="sr-only">
+                      {item.trend === "up" ? "Increased" : "Decreased"} by {item.change}
+                    </span>
                   </span>
                 </CardContent>
               </Card>
